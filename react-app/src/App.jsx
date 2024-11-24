@@ -3,6 +3,8 @@ import { useState } from "react";
 import Header from "./components/Header";
 import Item from "./components/Item";
 import Form from "./components/Form";
+import AppDrawer from "./components/AppDrawer";
+
 import { useApp } from "./AppProvider";
 
 import { Container } from "@mui/material";
@@ -28,6 +30,7 @@ export default function App() {
 	return (
 		<div>
 			<Header />
+            <AppDrawer />
 
 			<Container
 				sx={{ mt: 4 }}

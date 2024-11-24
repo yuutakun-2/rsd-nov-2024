@@ -1,19 +1,45 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useMemo } from "react";
+
+import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
 
 import App from "./App";
 
 const AppContext = createContext();
 
 export function useApp() {
-    return useContext(AppContext);
+	return useContext(AppContext);
 }
 
 export default function AppProvider() {
-    const [showForm, setShowForm] = useState(false);
+	const [showForm, setShowForm] = useState(false);
+	const [showDrawer, setShowDrawer] = useState(false);
+	const [mode, setMode] = useState("dark");
+	const [auth, setAuth] = useState(false);
 
-    return (
-		<AppContext.Provider value={{ showForm, setShowForm }}>
-			<App />
+	const theme = useMemo(() => {
+		return createTheme({
+			palette: {
+				mode,
+			}
+		});
+	}, [mode]);
+
+	return (
+		<AppContext.Provider
+			value={{
+				showDrawer,
+				setShowDrawer,
+				showForm,
+				setShowForm,
+				mode,
+				setMode,
+                auth,
+                setAuth,
+			}}>
+			<ThemeProvider theme={theme}>
+				<App />
+				<CssBaseline />
+			</ThemeProvider>
 		</AppContext.Provider>
 	);
 }
