@@ -1,17 +1,12 @@
 import { useState } from "react";
 
 import Header from "./components/Header";
-import Item from "./components/Item";
-import Form from "./components/Form";
 import AppDrawer from "./components/AppDrawer";
 
-import { useApp } from "./AppProvider";
-
 import { Container } from "@mui/material";
+import { Outlet } from "react-router";
 
 export default function App() {
-	const { showForm } = useApp();
-
 	const [posts, setPosts] = useState([
 		{ id: 3, content: "Some content", user: "Alice" },
 		{ id: 2, content: "More content", user: "Alice" },
@@ -35,15 +30,7 @@ export default function App() {
 			<Container
 				sx={{ mt: 4 }}
 				maxWidth="md">
-				{showForm && <Form add={add} />}
-
-				{posts.map(post => (
-					<Item
-						key={post.id}
-						post={post}
-						remove={remove}
-					/>
-				))}
+				<Outlet />
 			</Container>
 		</div>
 	);

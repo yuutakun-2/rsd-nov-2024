@@ -12,7 +12,7 @@ import { blue } from "@mui/material/colors";
 
 export default function Item({ post, remove }) {
 	return (
-		<Card sx={{ mb: 3 }}>
+		<Card sx={{ mb: 2 }}>
 			<CardContent>
 				<Box
 					sx={{

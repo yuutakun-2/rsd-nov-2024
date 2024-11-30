@@ -7,26 +7,39 @@ import {
 } from "@mui/material";
 
 import {
+    ArrowBack as BackIcon,
     Menu as MenuIcon,
     Add as AddIcon,
     LightMode as LightModeIcon,
     DarkMode as DarkModeIcon,
 } from "@mui/icons-material";
 
+import { useLocation, useNavigate } from "react-router";
+
 import { useApp } from "../AppProvider";
 
 export default function Header() {
     const { showForm, setShowForm, mode, setMode, setShowDrawer } = useApp();
+    const { pathname } = useLocation();
+    const navigate = useNavigate();
 
 	return (
 		<AppBar position="static">
 			<Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
 				<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <IconButton
-                        color="inherit"
-                        onClick={() => setShowDrawer(true)}>
-                        <MenuIcon />
-                    </IconButton>
+					{pathname == "/" ? (
+						<IconButton
+							color="inherit"
+							onClick={() => setShowDrawer(true)}>
+							<MenuIcon />
+						</IconButton>
+					) : (
+						<IconButton
+							color="inherit"
+							onClick={() => navigate("/")}>
+							<BackIcon />
+						</IconButton>
+					)}
 					<Typography>App</Typography>
 				</Box>
 

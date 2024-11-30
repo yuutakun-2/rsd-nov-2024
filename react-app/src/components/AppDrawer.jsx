@@ -18,10 +18,11 @@ import {
 } from "@mui/icons-material"
 
 import { useApp } from "../AppProvider";
-import { grey } from "@mui/material/colors";
+import { useNavigate } from "react-router";
 
 export default function AppDrawer() {
 	const { showDrawer, setShowDrawer, auth, setAuth } = useApp();
+    const navigate = useNavigate();
 
 	const toggleDrawer = newOpen => () => {
 		setShowDrawer(newOpen);
@@ -32,12 +33,12 @@ export default function AppDrawer() {
 			sx={{ width: 300 }}
 			role="presentation"
 			onClick={toggleDrawer(false)}>
-            <Box sx={{ height: 200 }}></Box>
-            <Divider />
+			<Box sx={{ height: 200 }}></Box>
+			<Divider />
 
 			<List>
 				<ListItem disablePadding>
-					<ListItemButton>
+					<ListItemButton onClick={() => navigate("/")}>
 						<ListItemIcon>
 							<HomeIcon />
 						</ListItemIcon>
@@ -50,7 +51,7 @@ export default function AppDrawer() {
 			{auth && (
 				<List>
 					<ListItem disablePadding>
-						<ListItemButton>
+						<ListItemButton onClick={() => navigate("/profile")}>
 							<ListItemIcon>
 								<ProfileIcon />
 							</ListItemIcon>
@@ -71,7 +72,7 @@ export default function AppDrawer() {
 			{!auth && (
 				<List>
 					<ListItem disablePadding>
-						<ListItemButton>
+						<ListItemButton onClick={() => navigate("/register")}>
 							<ListItemIcon>
 								<RegisterIcon />
 							</ListItemIcon>
@@ -79,7 +80,7 @@ export default function AppDrawer() {
 						</ListItemButton>
 					</ListItem>
 					<ListItem disablePadding>
-						<ListItemButton onClick={() => setAuth(true)}>
+						<ListItemButton onClick={() => navigate("/login")}>
 							<ListItemIcon>
 								<LoginIcon />
 							</ListItemIcon>

@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useMemo } from "react";
 
 import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
 
-import App from "./App";
+import AppRouter from "./AppRouter";
 
 const AppContext = createContext();
 
@@ -37,7 +37,7 @@ export default function AppProvider() {
                 setAuth,
 			}}>
 			<ThemeProvider theme={theme}>
-				<App />
+				<AppRouter />
 				<CssBaseline />
 			</ThemeProvider>
 		</AppContext.Provider>
