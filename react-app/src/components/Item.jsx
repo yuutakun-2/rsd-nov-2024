@@ -23,7 +23,7 @@ export default function Item({ post, remove }) {
 					<Box sx={{ display: "flex", gap: 2, mb: 2 }}>
 						<Avatar sx={{ width: 32, height: 32, background: blue[500] }} />
 						<Typography sx={{ fontWeight: "bold" }}>
-							{post.user}
+							{post.user.name}
 						</Typography>
 					</Box>
 					<IconButton size="small" onClick={() => remove(post.id)}>
