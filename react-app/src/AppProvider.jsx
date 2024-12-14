@@ -2,9 +2,12 @@ import { createContext, useContext, useState, useMemo } from "react";
 
 import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
 
+import { QueryClientProvider, QueryClient } from "react-query";
+
 import AppRouter from "./AppRouter";
 
 const AppContext = createContext();
+const queryClient = new QueryClient();
 
 export function useApp() {
   return useContext(AppContext);
@@ -15,21 +18,6 @@ export default function AppProvider() {
   const [showDrawer, setShowDrawer] = useState(false);
   const [mode, setMode] = useState("dark");
   const [auth, setAuth] = useState(false);
-
-  const [posts, setPosts] = useState([
-    { id: 3, content: "Some content", user: "Alice" },
-    { id: 2, content: "More content", user: "Alice" },
-    { id: 1, content: "Another content", user: "Bob" },
-  ]);
-
-  const add = useState((content) => {
-    const id = posts[0].id + 1;
-    setPosts([{ id, content, user: "Alice" }, ...posts]);
-  });
-
-  const remove = useState((id) => {
-    setPosts(posts.filter((post) => post.id != id));
-  });
 
   const theme = useMemo(() => {
     return createTheme({
@@ -50,16 +38,14 @@ export default function AppProvider() {
         setMode,
         auth,
         setAuth,
-        posts,
-        setPosts,
-        add,
-        remove,
       }}
     >
-      <ThemeProvider theme={theme}>
-        <AppRouter />
-        <CssBaseline />
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider theme={theme}>
+          <AppRouter />
+          <CssBaseline />
+        </ThemeProvider>
+      </QueryClientProvider>
     </AppContext.Provider>
   );
 }
