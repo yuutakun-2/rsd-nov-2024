@@ -1,7 +1,10 @@
 import { Typography } from "@mui/material";
+
 import Item from "../components/Item";
+import Form from "../components/Form";
 
 import { useQuery, useMutation, useQueryClient } from "react-query";
+import { useApp } from "../AppProvider";
 
 const api = "http://localhost:8080/posts";
 
@@ -22,6 +25,8 @@ async function deletePost(id) {
 export default function Home() {
     const { data, error, isLoading } = useQuery("posts", fetchPosts);
     const queryClient = useQueryClient();
+
+    const { showForm } = useApp();
 
 	const remove = useMutation(deletePost, {
         onMutate: id => {
@@ -47,6 +52,8 @@ export default function Home() {
 
 	return (
 		<>
+			{showForm && <Form />}
+            
 			{data.map(post => {
 				return (
 					<Item
