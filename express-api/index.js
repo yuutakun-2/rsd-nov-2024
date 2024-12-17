@@ -20,7 +20,9 @@ app.get("/posts", async (req, res) => {
     orderBy: { id: "desc" },
   });
 
-  res.json(posts);
+  setTimeout(() => {
+    return res.json(posts);
+  }, 2000);
 });
 
 app.get("/posts/:id", async (req, res) => {
@@ -47,6 +49,9 @@ app.post("/posts", async (req, res) => {
     data: {
       content,
       userId: 2,
+    },
+    include: {
+      user: true,
     },
   });
 

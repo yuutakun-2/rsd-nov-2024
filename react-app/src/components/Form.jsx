@@ -1,40 +1,55 @@
 import { useRef } from "react";
 
-import {
-    OutlinedInput,
-    IconButton,
-} from "@mui/material";
+import { OutlinedInput, IconButton } from "@mui/material";
 
-import {
-    Add as AddIcon,
-} from "@mui/icons-material";
+import { Add as AddIcon } from "@mui/icons-material";
+import { useMutation, useQueryClient } from "react-query";
 
-import { useApp } from "../AppProvider";
+const api = "http://localhost:8080/posts";
+async function postPost(content) {
+  const res = await fetch(api, {
+    method: "POST",
+    headers: { "Content-type": "application/json" },
+    body: JSON.stringify({ content }),
+  });
+  return res.json();
+}
 
-export default function Form({ add }) {
-    const inputRef = useRef();
+export default function Form() {
+  const inputRef = useRef();
+  const queryClient = useQueryClient();
 
-    return (
-		<form
-			style={{ marginBottom: 20, display: "flex" }}
-			onSubmit={e => {
-				e.preventDefault();
+  const add = useMutation(postPost, {
+    onSuccess: async (content) => {
+      await queryClient.cancelQueries();
+      await queryClient.setQueryData("posts", (old) => {
+        return [content, ...old];
+      });
+    },
+  });
 
-				const content = inputRef.current.value;
-				content && add(content);
+  return (
+    <form
+      style={{ marginBottom: 20, display: "flex" }}
+      onSubmit={(e) => {
+        e.preventDefault();
 
-				e.currentTarget.reset();
-			}}>
-			<OutlinedInput
-				type="text"
-				style={{ flexGrow: 1 }}
-				inputRef={inputRef}
-                endAdornment={
-                    <IconButton type="submit">
-                        <AddIcon />
-                    </IconButton>
-                }
-			/>
-		</form>
-	);
+        const content = inputRef.current.value;
+        content && add.mutate(content);
+
+        e.currentTarget.reset();
+      }}
+    >
+      <OutlinedInput
+        type="text"
+        style={{ flexGrow: 1 }}
+        inputRef={inputRef}
+        endAdornment={
+          <IconButton type="submit">
+            <AddIcon />
+          </IconButton>
+        }
+      />
+    </form>
+  );
 }

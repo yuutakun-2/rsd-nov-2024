@@ -19,7 +19,7 @@ async function deletePost(id) {
 
 export default function Home() {
   const queryClient = useQueryClient();
-  const { add, showForm } = useApp();
+  const { showForm } = useApp();
   const { data, error, isLoading } = useQuery("posts", fetchPosts);
 
   // useMutation accepts two parameters:
@@ -27,6 +27,7 @@ export default function Home() {
   // second is the function that will run before the mutation function (first function) runs
   const remove = useMutation(deletePost, {
     onMutate: (id) => {
+      queryClient.cancelQueries();
       // write the code to change just the ui here
       // first the cache data should be updated (give cache key defined in useQuery above)
       queryClient.setQueryData("posts", (old) => {
@@ -40,22 +41,21 @@ export default function Home() {
   });
 
   // တချို့နေရာတွေမှာ Data မရောက်သေးဘဲ Component ကို အသုံးပြုမိရင် Error တက်နိုင်ပါတယ်။ ဒါကြောင့် ဒီပြဿနာကို ထည့်ဖြေရှင်းဖို့လိုပါတယ်။ ဒါကြောင့် Home.jsx ကို အခုလိုပြင်လိုက်ပါ။
-  // if (error) {
-  //   return <Typography>{error}</Typography>;
-  // }
-  // if (isLoading) {
-  //   return <Typography>Loading...</Typography>;
-  // }
+  if (error) {
+    return <Typography>{error}</Typography>;
+  }
+  if (isLoading) {
+    return <Typography>Loading...</Typography>;
+  }
   // If these codes are used, when isLoading is false => data is available => able to be used, so no need for data &&
 
   return (
     <div>
-      {showForm && <Form add={add} />}
+      {showForm && <Form />}
 
-      {data &&
-        data.map((post) => (
-          <Item key={post.id} post={post} remove={remove.mutate} />
-        ))}
+      {data.map((post) => (
+        <Item key={post.id} post={post} remove={remove.mutate} />
+      ))}
     </div>
   );
 }
