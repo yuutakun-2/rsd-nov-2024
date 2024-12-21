@@ -2,10 +2,14 @@ function a() {
     console.log("Function A");
 }
 
-function b() {
+function b(shouldReject) {
 	return new Promise((resolve, reject) => {
         setTimeout(() => {
-			resolve("Function B");
+			if (shouldReject) {
+				reject("Function B Rejected");
+			} else {
+				resolve("Function B");
+			}
 		}, 2000);
     });
 }
@@ -16,7 +20,11 @@ function c() {
 
 async function app() {
     a();
-    console.log(await b());
+    try {
+        console.log(await b(false)); // Change parameter to true to test rejection
+    } catch (error) {
+        console.error(error);
+    }
     c();
 }
 

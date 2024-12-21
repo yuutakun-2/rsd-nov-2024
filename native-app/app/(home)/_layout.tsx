@@ -4,7 +4,10 @@ import { TouchableOpacity } from "react-native";
 
 export default function Home() {
 	return (
-		<Tabs screenOptions={{ tabBarActiveTintColor: "#F72C5B" }}>
+		<Tabs
+			screenOptions={{
+				tabBarActiveTintColor: "#F72C5B",
+			}}>
 			<Tabs.Screen
 				name="index"
 				options={{
