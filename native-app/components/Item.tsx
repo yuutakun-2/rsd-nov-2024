@@ -7,6 +7,10 @@ import {
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 
+import { useMutation, useQueryClient } from "react-query";
+
+import type { ItemType } from "../types/ItemType";
+
 const styles = StyleSheet.create({
 	card: {
 		padding: 15,
@@ -37,7 +41,30 @@ const styles = StyleSheet.create({
 	},
 });
 
-export default function Item() {
+async function deleteItem (id: number) {
+    const res = await fetch(`http://localhost:8080/posts/${id}`, {
+        method: "DELETE",
+    });
+
+    if (!res.ok) {
+        throw new Error("Network res was not ok");
+    }
+
+    return res.json();
+};
+
+export default function Item({ item }: {  item: ItemType }) {
+    const queryClient = useQueryClient();
+
+    const remove = useMutation(deleteItem, {
+		onMutate: async id => {
+            await queryClient.cancelQueries("posts");
+            await queryClient.setQueryData<ItemType[] | undefined>("posts", old => {
+                return old?.filter(item => item.id !== id);
+            });
+        }
+	});
+
 	return (
 		<View style={styles.card}>
 			<View style={styles.cardHeader}>
@@ -47,10 +74,10 @@ export default function Item() {
 						size={32}
 						color="#F72C5B"
 					/>
-					<Text style={styles.authorName}>Alice</Text>
+					<Text style={styles.authorName}>{item.user.name}</Text>
 					<Text style={styles.time}>4h</Text>
 				</View>
-				<TouchableOpacity>
+				<TouchableOpacity onPress={() => remove.mutate(item.id)}>
 					<Ionicons
 						name="trash-outline"
 						color="gray"
@@ -60,8 +87,7 @@ export default function Item() {
 			</View>
 			<View style={{ paddingLeft: 37 }}>
 				<Text style={styles.content}>
-					Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-					Dolor vel voluptates similique corrupti voluptatibus?
+					{item.content}
 				</Text>
 
 				<View
