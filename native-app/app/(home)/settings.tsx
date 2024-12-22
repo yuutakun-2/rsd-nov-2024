@@ -1,8 +1,12 @@
-import { Link } from "expo-router";
-import { View, Text } from "react-native";
+import { View } from "react-native";
+
+import { ThemeSwitchButton } from "@/components/ThemeSwitchButton";
 
 export default function Settings() {
-    return <View>
-        <Text>Settings</Text>
-    </View>
+	return (
+		<View
+			style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+			<ThemeSwitchButton />
+		</View>
+	);
 }

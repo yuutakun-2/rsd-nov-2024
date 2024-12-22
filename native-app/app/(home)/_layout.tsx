@@ -1,8 +1,11 @@
 import { Tabs, router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TouchableOpacity } from "react-native";
+import { useTheme } from "@react-navigation/native";
 
 export default function Home() {
+    const { colors } = useTheme();
+
 	return (
 		<Tabs
 			screenOptions={{
@@ -20,6 +23,7 @@ export default function Home() {
 							<Ionicons
 								name="add"
 								size={24}
+                                color={colors.text}
 							/>
 						</TouchableOpacity>
 					),

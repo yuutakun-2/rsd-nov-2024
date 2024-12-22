@@ -1,11 +1,12 @@
 import React from "react";
 import { View, TextInput, Button, StyleSheet } from "react-native";
 
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
 import { useMutation, useQueryClient } from "react-query";
 
 import type { ItemType } from "@/types/ItemType";
+import { useTheme } from "@react-navigation/native";
 
 const styles = StyleSheet.create({
 	container: {
@@ -13,8 +14,9 @@ const styles = StyleSheet.create({
 	},
 	input: {
 		height: 100,
-		borderColor: "gray",
+		borderColor: "#ccc",
 		borderWidth: 1,
+		borderRadius: 5,
 		marginBottom: 10,
 		padding: 10,
 		fontSize: 18,
@@ -46,11 +48,17 @@ const postContent = async (content: string) => {
 };
 
 export default function Add() {
-	const { control, handleSubmit } = useForm();
+	const {
+		control,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<{ content: string }>();
 
 	const queryClient = useQueryClient();
 
-	const onSubmit = (data: any) => {
+	const { colors } = useTheme();
+
+	const onSubmit = (data: { content: string }) => {
 		add.mutate(data.content);
 		router.push("../");
 	};
@@ -58,9 +66,12 @@ export default function Add() {
 	const add = useMutation(postContent, {
 		onSuccess: async item => {
 			await queryClient.cancelQueries("posts");
-			await queryClient.setQueryData<ItemType[] | undefined>("posts", old => {
-                return old ? [...old, item] : [item];
-            });
+			await queryClient.setQueryData<ItemType[] | undefined>(
+				"posts",
+				old => {
+					return old ? [item, ...old] : [item];
+				}
+			);
 		},
 		onError: error => {
 			console.error("Error posting content:", error);
@@ -71,9 +82,18 @@ export default function Add() {
 		<View style={styles.container}>
 			<Controller
 				control={control}
+				rules={{
+					required: true,
+				}}
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						style={styles.input}
+						style={[
+							styles.input,
+							{ color: colors.text, borderColor: colors.border },
+							errors.content && {
+								borderColor: "red",
+							},
+						]}
 						onBlur={onBlur}
 						onChangeText={onChange}
 						value={value}
@@ -84,18 +104,11 @@ export default function Add() {
 				name="content"
 				defaultValue=""
 			/>
+
 			<Button
 				title="Submit"
 				onPress={handleSubmit(onSubmit)}
 			/>
-
-			<View style={{ marginTop: 10 }}>
-				<Link
-					href="../"
-					style={{ textAlign: "center" }}>
-					Cancel
-				</Link>
-			</View>
 		</View>
 	);
 }

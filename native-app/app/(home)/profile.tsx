@@ -1,8 +1,12 @@
-import { Link } from "expo-router";
-import { View, Text } from "react-native";
+import { View } from "react-native";
+
+import Text from "../../components/Text";
 
 export default function Profile() {
-    return <View>
-        <Text>Profile</Text>
-    </View>
+	return (
+		<View
+			style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+			<Text>Profile</Text>
+		</View>
+	);
 }
