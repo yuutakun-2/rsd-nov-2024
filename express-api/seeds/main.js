@@ -24,7 +24,7 @@ async function main() {
   for (i = 0; i < 5; i++) {
     const title = faker.lorem.word();
     const content = faker.lorem.paragraph();
-    const userId = faker.number.int({ min: 1, max: 30 });
+    const userId = faker.number.int({ min: 1, max: 10 });
 
     await prisma.post.create({
       data: {

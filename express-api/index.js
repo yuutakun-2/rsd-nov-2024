@@ -48,7 +48,7 @@ app.post("/posts", async (req, res) => {
   const post = await prisma.post.create({
     data: {
       content,
-      userId: 2,
+      userId: 1,
     },
     include: {
       user: true,

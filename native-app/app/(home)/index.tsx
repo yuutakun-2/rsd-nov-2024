@@ -1,7 +1,25 @@
 import { Text, View, ScrollView, StyleSheet } from "react-native";
-import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
+
+import { useQuery } from "react-query";
+import { Item } from "@/components/Item";
+
+type Item = {
+  id: number;
+  title: string;
+  content: string;
+  userId: number;
+  created: string;
+  user: {
+    id: number;
+    name: string;
+    username: string;
+    email: string;
+    bio: string;
+    created: string;
+  };
+};
 
 const styles = StyleSheet.create({
   section: {
@@ -13,11 +31,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: "lightgrey",
     borderRadius: 6,
+    marginBottom: 12,
   },
   contentHeading: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginBottom: 8,
   },
   authorHeading: {
     flexDirection: "row",
@@ -34,24 +54,40 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 });
+
+const api = "http://192.168.31.191:8080";
+
+async function fetchPosts(): Promise<Item[]> {
+  const response = await fetch(`${api}/posts`);
+
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.json();
+}
+
 export default function Index() {
+  const { data, error, isLoading } = useQuery<Item[], Error>(
+    "posts",
+    fetchPosts
+  );
+
+  if (isLoading) {
+    return <Text>Loading...</Text>;
+  }
+  if (error) {
+    return <Text>Error: {error.message}</Text>;
+  }
+  if (!data) {
+    return <Text>No data</Text>;
+  }
+
   return (
     <ScrollView style={styles.section}>
-      <View style={styles.contentCard}>
-        <View style={styles.contentHeading}>
-          <View style={styles.authorHeading}>
-            <Ionicons name="person-circle" size={48} color="black" />
-            <Text style={styles.Profile}>Arkar</Text>
-          </View>
-          <AntDesign name="delete" size={24} color="black" />
-        </View>
-        <Text style={styles.content}>
-          Lorem ipsum dolor sit amet consectetur, adipisicing elit. Vero
-          mollitia ex est, voluptatum quaerat possimus voluptatibus laborum
-          nihil aliquam placeat earum impedit, repudiandae illo id modi
-          laudantium blanditiis assumenda molestias.
-        </Text>
-      </View>
+      {data.map((post) => (
+        <Item key={post.id} post={post} />
+      ))}
     </ScrollView>
   );
 }

@@ -1,13 +1,12 @@
-import { Tabs } from "expo-router";
+import { router, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Platform } from "react-native";
+import { Platform, TouchableOpacity } from "react-native";
 
 export default function Home() {
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: "darkblue",
-        headerShown: false,
         tabBarStyle: Platform.select({
           ios: {
             // Use a transparent background on iOS to show the blur effect
@@ -20,6 +19,14 @@ export default function Home() {
       <Tabs.Screen
         name="index"
         options={{
+          headerRight: () => (
+            <TouchableOpacity
+              style={{ marginRight: 16 }}
+              onPress={() => router.push("/add")}
+            >
+              <Ionicons size={28} name="add-circle-outline" color="darkblue" />
+            </TouchableOpacity>
+          ),
           title: "Home",
           tabBarIcon: ({ color }) => (
             <Ionicons size={28} name="home-outline" color={color} />
