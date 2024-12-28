@@ -8,9 +8,9 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { itemType } from "@/types/itemType";
+import type { itemType } from "@/types/itemType";
 
-const api = "http://192.168.31.191:8080";
+const api = "http://192.168.100.11:8080";
 
 const addPost = async (content: string) => {
   const res = await fetch(`${api}/posts`, {
@@ -27,10 +27,14 @@ const addPost = async (content: string) => {
 };
 
 export default function Add() {
-  const { control, handleSubmit } = useForm();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<itemType>();
   const queryClient = useQueryClient();
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: { content: string }) => {
     add.mutate(data.content);
     router.back();
   };
@@ -54,6 +58,13 @@ export default function Add() {
       alignItems: "center",
       backgroundColor: "#fff",
     },
+    input: {
+      height: 200,
+      width: 300,
+      margin: 12,
+      borderWidth: 1,
+      padding: 10,
+    },
   });
 
   return (
@@ -62,15 +73,10 @@ export default function Add() {
         control={control}
         name="content"
         defaultValue=""
+        rules={{ required: true }}
         render={({ field: { onChange, value } }) => (
           <TextInput
-            style={{
-              height: 200,
-              width: 300,
-              margin: 12,
-              borderWidth: 1,
-              padding: 10,
-            }}
+            style={[styles.input, errors.content && { borderColor: "red" }]}
             placeholder="Enter your post here"
             multiline
             onChangeText={onChange}

@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const api = "http://192.168.31.191:8080";
+const api = "http://192.168.100.11:8080";
 
 async function fetchPosts(): Promise<Item[]> {
   const response = await fetch(`${api}/posts`);

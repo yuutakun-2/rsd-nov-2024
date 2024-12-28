@@ -1,24 +1,11 @@
-import { View, Text, StyleSheet } from "react-native";
-import { Ionicons, AntDesign } from "@expo/vector-icons";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useMutation, QueryClient, useQueryClient } from "react-query";
+import { formatDistance, getTime } from "date-fns";
 
-type Item = {
-  id: number;
-  title: string;
-  content: string;
-  userId: number;
-  created: string;
-  user: {
-    id: number;
-    name: string;
-    username: string;
-    email: string;
-    bio: string;
-    created: string;
-  };
-};
+import type { itemType } from "@/types/itemType";
 
-const api = "http://192.168.31.191:8080";
+const api = "http://192.168.100.11:8080";
 
 async function deletePost(id: number) {
   const res = await fetch(`${api}/posts/${id}`, {
@@ -30,13 +17,13 @@ async function deletePost(id: number) {
   return res.json();
 }
 // {post} : {post: Item}
-export function Item({ post }: { post: Item }) {
+export function Item({ post }: { post: itemType }) {
   const queryClient = useQueryClient();
 
   const remove = useMutation(deletePost, {
     onMutate: async (id) => {
       await queryClient.cancelQueries("posts");
-      queryClient.setQueryData<Item[] | undefined>("posts", (old) => {
+      queryClient.setQueryData<itemType[] | undefined>("posts", (old) => {
         return old?.filter((post) => post.id !== id);
       });
     },
@@ -48,9 +35,10 @@ export function Item({ post }: { post: Item }) {
         <View style={styles.authorHeading}>
           <Ionicons name="person-circle" size={32} color="black" />
           <Text style={styles.Profile}>{post.user.name}</Text>
+          <Text>{formatDistance(new Date(), post.created)}</Text>
         </View>
-        <AntDesign
-          name="delete"
+        <Ionicons
+          name="trash"
           size={24}
           color="black"
           onPress={() => remove.mutate(post.id)}
@@ -59,6 +47,18 @@ export function Item({ post }: { post: Item }) {
       <Text style={styles.content}>
         <Text key={post.id}>{post.content}</Text>
       </Text>
+      <View style={styles.iconRow}>
+        <TouchableOpacity style={styles.iconWithLabel}>
+          <Ionicons name="heart-outline" size={24} color="red" />
+          <Text style={styles.iconLabel}>24</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconWithLabel}>
+          <Ionicons name="chatbubble-outline" size={24} color="blue" />
+          <Text style={styles.iconLabel}>24</Text>
+        </TouchableOpacity>
+        <Ionicons name="share-social" size={24} color="black" />
+        <Ionicons name="ellipsis-horizontal" size={24} color="black" />
+      </View>
     </View>
   );
 }
@@ -94,5 +94,21 @@ const styles = StyleSheet.create({
   content: {
     fontSize: 16,
     lineHeight: 22,
+    paddingLeft: 42,
+  },
+  iconRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  iconWithLabel: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  iconLabel: {
+    fontSize: 16,
+    color: "black",
   },
 });
