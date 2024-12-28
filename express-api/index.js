@@ -9,7 +9,12 @@ const prisma = new PrismaClient();
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());  
+app.use(bodyParser.json()); 
+
+const { auth, isOwner } = require("./middlewares/auth");
+
+const { usersRouter } = require("./routers/users");
+app.use(usersRouter);
 
 app.get('/posts', async (req, res) => {
     const posts = await prisma.post.findMany({
@@ -47,7 +52,7 @@ app.post('/posts', async (req, res) => {
     res.status(201).json(post);
 });
 
-app.delete('/posts/:id', async (req, res) => {
+app.delete('/posts/:id', auth, isOwner("post"), async (req, res) => {
     const { id } = req.params;
 
     const post = await prisma.post.delete({
