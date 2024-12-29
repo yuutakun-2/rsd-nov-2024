@@ -19,7 +19,7 @@ import { useLocation, useNavigate } from "react-router";
 import { useApp } from "../AppProvider";
 
 export default function Header() {
-    const { showForm, setShowForm, mode, setMode, setShowDrawer } = useApp();
+    const { auth, showForm, setShowForm, mode, setMode, setShowDrawer } = useApp();
     const { pathname } = useLocation();
     const navigate = useNavigate();
 
@@ -44,11 +44,13 @@ export default function Header() {
 				</Box>
 
 				<Box sx={{ display: "flex", gap: 1 }}>
-					<IconButton
-						color="inherit"
-						onClick={() => setShowForm(!showForm)}>
-						<AddIcon />
-					</IconButton>
+					{auth && (
+						<IconButton
+							color="inherit"
+							onClick={() => setShowForm(!showForm)}>
+							<AddIcon />
+						</IconButton>
+					)}
 
 					{mode == "dark" ? (
 						<IconButton

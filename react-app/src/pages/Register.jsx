@@ -1,10 +1,25 @@
 import { Box, Typography, OutlinedInput, Button } from "@mui/material";
-import { useApp } from "../AppProvider";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
+import { useMutation } from "react-query";
+
+async function postUser(data) {
+    const res = await fetch("http://localhost:8080/users", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+
+    if (!res.ok) {
+        throw new Error("Network response was not ok");
+    }
+
+    return res.json();
+}
 
 export default function Register() {
-	const { setAuth } = useApp();
 	const navigate = useNavigate();
 
 	const {
@@ -13,8 +28,14 @@ export default function Register() {
 		formState: { errors },
 	} = useForm();
 
-	const submitRegister = () => {
-		navigate("/login");
+    const create = useMutation(postUser, {
+        onSuccess: () => {
+            navigate("/login");
+        },
+    });
+
+	const submitRegister = data => {
+        create.mutate(data);
 	};
 
 	return (

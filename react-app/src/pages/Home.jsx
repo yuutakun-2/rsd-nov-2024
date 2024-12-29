@@ -15,14 +15,21 @@ async function fetchPosts() {
 }
 
 async function deletePost(id) {
+    const token = localStorage.getItem("token");
+    
     const res = await fetch(`${api}/${id}`, {
         method: 'DELETE',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
     });
 
     return res.json();
 }
 
 export default function Home() {
+    const { auth } = useApp();
+
     const { data, error, isLoading } = useQuery("posts", fetchPosts);
     const queryClient = useQueryClient();
 
@@ -52,7 +59,7 @@ export default function Home() {
 
 	return (
 		<>
-			{showForm && <Form />}
+			{auth && showForm && <Form />}
             
 			{data.map(post => {
 				return (

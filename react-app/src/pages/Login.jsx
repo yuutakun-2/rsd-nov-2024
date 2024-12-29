@@ -1,7 +1,24 @@
-import { Box, Typography, OutlinedInput, Button } from "@mui/material";
+import { Box, Typography, OutlinedInput, Button, Alert } from "@mui/material";
 import { useApp } from "../AppProvider";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
+import { useMutation } from "react-query";
+
+async function postLogin(data) {
+	const res = await fetch("http://localhost:8080/login", {
+		method: "POST",
+		body: JSON.stringify(data),
+		headers: {
+			"Content-Type": "application/json",
+		},
+	});
+
+	if (!res.ok) {
+		throw new Error("Network response was not ok");
+	}
+
+	return res.json();
+}
 
 export default function Login() {
 	const { setAuth } = useApp();
@@ -13,14 +30,29 @@ export default function Login() {
 		formState: { errors },
 	} = useForm();
 
-	const submitLogin = () => {
-		setAuth(true);
-		navigate("/");
+	const login = useMutation(postLogin, {
+		onSuccess: data => {
+			setAuth(data.user);
+			localStorage.setItem("token", data.token);
+			navigate("/");
+		},
+	});
+
+	const submitLogin = data => {
+		login.mutate(data);
 	};
 
 	return (
 		<Box>
 			<Typography variant="h3">Login</Typography>
+
+			{login.isError && (
+				<Alert
+					severity="warning"
+					sx={{ mt: 2 }}>
+					Invalid username or password
+				</Alert>
+			)}
 
 			<form onSubmit={handleSubmit(submitLogin)}>
 				<OutlinedInput

@@ -1,28 +1,30 @@
 import {
-    Box,
-    Drawer,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemIcon,
-    ListItemText,
-    Divider,
+	Box,
+	Drawer,
+	List,
+	ListItem,
+	ListItemButton,
+	ListItemIcon,
+	ListItemText,
+	Divider,
+	Avatar,
 } from "@mui/material";
 
 import {
-    Home as HomeIcon,
-    Person as ProfileIcon,
-    PersonAdd as RegisterIcon,
-    Login as LoginIcon,
-    Logout as LogoutIcon,
-} from "@mui/icons-material"
+	Home as HomeIcon,
+	Person as ProfileIcon,
+	PersonAdd as RegisterIcon,
+	Login as LoginIcon,
+	Logout as LogoutIcon,
+} from "@mui/icons-material";
 
 import { useApp } from "../AppProvider";
 import { useNavigate } from "react-router";
+import { green } from "@mui/material/colors";
 
 export default function AppDrawer() {
 	const { showDrawer, setShowDrawer, auth, setAuth } = useApp();
-    const navigate = useNavigate();
+	const navigate = useNavigate();
 
 	const toggleDrawer = newOpen => () => {
 		setShowDrawer(newOpen);
@@ -33,7 +35,26 @@ export default function AppDrawer() {
 			sx={{ width: 300 }}
 			role="presentation"
 			onClick={toggleDrawer(false)}>
-			<Box sx={{ height: 200 }}></Box>
+			<Box
+				sx={{
+					height: 200,
+					padding: 2,
+					display: "flex",
+					alignItems: "flex-end",
+				}}>
+				{auth && (
+					<>
+						<Avatar
+							sx={{
+								width: 128,
+								height: 128,
+								background: green[500],
+							}}>
+							{auth.name[0]}
+						</Avatar>
+					</>
+				)}
+			</Box>
 			<Divider />
 
 			<List>
@@ -59,7 +80,11 @@ export default function AppDrawer() {
 						</ListItemButton>
 					</ListItem>
 					<ListItem disablePadding>
-						<ListItemButton onClick={() => setAuth(false)}>
+						<ListItemButton
+							onClick={() => {
+								setAuth(false);
+								localStorage.removeItem("token");
+							}}>
 							<ListItemIcon>
 								<LogoutIcon />
 							</ListItemIcon>

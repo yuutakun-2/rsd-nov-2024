@@ -48,11 +48,14 @@ router.post("/login", async (req, res) => {
         return res.status(404).json({ msg: "user not found" });
     }
 
-    if (await bcrypt.compare(user.password, password)) {
-        return res.status(401).json({ msg: "invalid password" });
+    if (await bcrypt.compare(password, user.password)) {
+        res.json({
+			token: jwt.sign(user, process.env.JWT_SECRET),
+			user,
+		});
+    } else {
+        res.status(401).json({ msg: "invalid password" });
     }
-
-    res.json({ token: jwt.sign(user, process.env.JWT_SECRET) });
 });
 
 module.exports = { usersRouter: router };

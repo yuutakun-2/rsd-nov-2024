@@ -23,9 +23,7 @@ app.get('/posts', async (req, res) => {
         orderBy: { id: 'desc' }
     });
 
-    setTimeout(() => {
-        res.json(posts);
-    }, 2000);
+    res.json(posts);
 });
 
 app.get('/posts/:id', async (req, res) => {
@@ -38,14 +36,17 @@ app.get('/posts/:id', async (req, res) => {
     res.json(post);
 });
 
-app.post('/posts', async (req, res) => {
+app.post('/posts', auth, async (req, res) => {
     const { content } = req.body;
+
+    const user = res.locals.user;
+
     if(!content) {
         return res.status(400).json({ msg: 'content is required' });
     }
 
     const post = await prisma.post.create({
-        data: { content, userId: 1 },
+        data: { content, userId: Number(user.id) },
         include: { user: true },
     });
 
