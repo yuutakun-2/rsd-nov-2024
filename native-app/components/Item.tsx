@@ -1,9 +1,11 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
+import Text from "../components/Text";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, QueryClient, useQueryClient } from "react-query";
 import { formatDistance, getTime } from "date-fns";
 
 import type { itemType } from "@/types/itemType";
+import { useTheme } from "@react-navigation/native";
 
 const api = "http://192.168.100.11:8080";
 
@@ -19,6 +21,7 @@ async function deletePost(id: number) {
 // {post} : {post: Item}
 export function Item({ post }: { post: itemType }) {
   const queryClient = useQueryClient();
+  const { colors } = useTheme();
 
   const remove = useMutation(deletePost, {
     onMutate: async (id) => {
@@ -30,18 +33,18 @@ export function Item({ post }: { post: itemType }) {
   });
 
   return (
-    <View style={styles.contentCard}>
+    <View style={[styles.contentCard, { borderColor: colors.border }]}>
       <View style={styles.contentHeading}>
         <View style={styles.authorHeading}>
-          <Ionicons name="person-circle" size={32} color="black" />
+          <Ionicons name="person-circle" size={32} color="darkblue" />
           <Text style={styles.Profile}>{post.user.name}</Text>
           <Text>{formatDistance(new Date(), post.created)}</Text>
         </View>
         <Ionicons
           name="trash"
           size={24}
-          color="black"
           onPress={() => remove.mutate(post.id)}
+          color={colors.text}
         />
       </View>
       <Text style={styles.content}>
@@ -50,14 +53,14 @@ export function Item({ post }: { post: itemType }) {
       <View style={styles.iconRow}>
         <TouchableOpacity style={styles.iconWithLabel}>
           <Ionicons name="heart-outline" size={24} color="red" />
-          <Text style={styles.iconLabel}>24</Text>
+          <Text style={[styles.iconLabel, { color: colors.text }]}>24</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconWithLabel}>
           <Ionicons name="chatbubble-outline" size={24} color="blue" />
-          <Text style={styles.iconLabel}>24</Text>
+          <Text style={[styles.iconLabel, { color: colors.text }]}>24</Text>
         </TouchableOpacity>
-        <Ionicons name="share-social" size={24} color="black" />
-        <Ionicons name="ellipsis-horizontal" size={24} color="black" />
+        <Ionicons name="share-social" size={24} color={colors.text} />
+        <Ionicons name="ellipsis-horizontal" size={24} color={colors.text} />
       </View>
     </View>
   );
@@ -69,9 +72,9 @@ const styles = StyleSheet.create({
   },
   contentCard: {
     padding: 16,
-    borderBlockColor: "black",
+    // borderBlockColor: "black",
     borderWidth: 1,
-    backgroundColor: "lightgrey",
+    // backgroundColor: "lightgrey",
     borderRadius: 6,
     marginBottom: 12,
   },

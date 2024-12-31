@@ -1,8 +1,10 @@
 import { router, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Platform, TouchableOpacity } from "react-native";
+import { useTheme } from "@react-navigation/native";
 
 export default function Home() {
+  const { colors } = useTheme();
   return (
     <Tabs
       screenOptions={{
@@ -24,7 +26,11 @@ export default function Home() {
               style={{ marginRight: 16 }}
               onPress={() => router.push("/add")}
             >
-              <Ionicons size={28} name="add-circle-outline" color="darkblue" />
+              <Ionicons
+                size={28}
+                name="add-circle-outline"
+                color={colors.text}
+              />
             </TouchableOpacity>
           ),
           title: "Home",

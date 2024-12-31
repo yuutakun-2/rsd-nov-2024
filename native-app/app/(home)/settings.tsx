@@ -1,5 +1,5 @@
 import { Text, View } from "react-native";
-import { Link } from "expo-router";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Settings() {
   return (
@@ -10,8 +10,7 @@ export default function Settings() {
         alignItems: "center",
       }}
     >
-      <Text>This is Settings.</Text>
-      <Link href={"/profile"}>Profile</Link>
+      <ThemeToggle />
     </View>
   );
 }
