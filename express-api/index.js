@@ -4,6 +4,11 @@ const app = express();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const { usersRouter } = require("./routers/users");
+app.use(usersRouter);
+
+const { auth, isOwner } = require("./middlewares/auth");
+
 const cors = require("cors");
 app.use(cors());
 
@@ -48,7 +53,7 @@ app.post("/posts", async (req, res) => {
   const post = await prisma.post.create({
     data: {
       content,
-      userId: 1,
+      userId: 26,
     },
     include: {
       user: true,
@@ -58,7 +63,7 @@ app.post("/posts", async (req, res) => {
   res.status(201).json(post);
 });
 
-app.delete("/posts/:id", async (req, res) => {
+app.delete("/posts/:id", auth, isOwner("posts"), async (req, res) => {
   const { id } = req.params;
   const post = await prisma.post.delete({
     where: { id: Number(id) },
