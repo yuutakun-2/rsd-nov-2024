@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo } from "react";
+import { createContext, useContext, useState, useMemo, useEffect } from "react";
 
 import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
 
@@ -18,6 +18,25 @@ export default function AppProvider() {
   const [showDrawer, setShowDrawer] = useState(false);
   const [mode, setMode] = useState("dark");
   const [auth, setAuth] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetch(`${import.meta.env.VITE_API}/verify`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((user) => {
+          setAuth(user);
+        })
+        .catch(() => {
+          setAuth(false);
+          localStorage.removeItem("token");
+        });
+    }
+  }, []);
 
   const theme = useMemo(() => {
     return createTheme({

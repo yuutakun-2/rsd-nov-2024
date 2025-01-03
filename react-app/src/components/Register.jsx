@@ -1,6 +1,23 @@
 import { Typography, Box, OutlinedInput, Button } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
+import { useMutation } from "react-query";
+
+async function postUser(data) {
+  const res = await fetch(`${import.meta.env.VITE_API}/users`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    throw new Error("Network response was not ok.");
+  }
+
+  return res.json();
+}
 
 export default function Register() {
   const {
@@ -11,8 +28,14 @@ export default function Register() {
 
   const navigate = useNavigate();
 
-  const submit = () => {
-    navigate("/login");
+  const create = useMutation(postUser, {
+    onSuccess: () => {
+      navigate("/login");
+    },
+  });
+
+  const submitRegister = (data) => {
+    create.mutate(data);
   };
 
   return (
@@ -20,7 +43,10 @@ export default function Register() {
       <Typography variant="h3" sx={{ mb: 3 }}>
         Register
       </Typography>
-      <form onSubmit={handleSubmit(submit)}>
+      <form
+        onSubmit={handleSubmit(submitRegister)}
+        style={{ display: "flex", flexDirection: "column", gap: 8 }}
+      >
         <OutlinedInput
           fullWidth
           placeholder="Name"
@@ -34,6 +60,13 @@ export default function Register() {
           {...register("username", { required: true })}
         ></OutlinedInput>
         {errors.username && <Typography>This field is required</Typography>}
+
+        <OutlinedInput
+          fullWidth
+          placeholder="Email"
+          {...register("email", { required: true })}
+        ></OutlinedInput>
+        {errors.email && <Typography>This field is required</Typography>}
 
         <OutlinedInput
           fullWidth

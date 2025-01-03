@@ -7,6 +7,7 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  Avatar,
 } from "@mui/material";
 
 import {
@@ -32,7 +33,22 @@ export default function AppDrawer() {
 
   const DrawerList = (
     <Box sx={{ width: 300 }} role="presentation" onClick={toggleDrawer(false)}>
-      <Box sx={{ height: 200 }}></Box>
+      <Box sx={{ height: 200 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+          }}
+        >
+          {auth && (
+            <Avatar sx={{ bgcolor: "primary.main", width: 56, height: 56 }}>
+              {auth.name.split(" ")[0]}
+            </Avatar>
+          )}
+        </Box>
+      </Box>
       <Divider />
 
       <List>

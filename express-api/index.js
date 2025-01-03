@@ -4,13 +4,13 @@ const app = express();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const cors = require("cors");
+app.use(cors());
+
 const { usersRouter } = require("./routers/users");
 app.use(usersRouter);
 
 const { auth, isOwner } = require("./middlewares/auth");
-
-const cors = require("cors");
-app.use(cors());
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -44,8 +44,9 @@ app.get("/posts/:id", async (req, res) => {
   res.json(post);
 });
 
-app.post("/posts", async (req, res) => {
+app.post("/posts", auth, async (req, res) => {
   const { content } = req.body;
+  const user = res.locals.user;
   if (!content) {
     return res.status(400).json({ msg: "content is required" });
   }
@@ -53,7 +54,7 @@ app.post("/posts", async (req, res) => {
   const post = await prisma.post.create({
     data: {
       content,
-      userId: 26,
+      userId: Number(user.id),
     },
     include: {
       user: true,

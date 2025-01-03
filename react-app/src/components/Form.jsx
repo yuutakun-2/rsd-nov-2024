@@ -5,11 +5,14 @@ import { OutlinedInput, IconButton } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
 import { useMutation, useQueryClient } from "react-query";
 
-const api = "http://localhost:8080/posts";
 async function postPost(content) {
-  const res = await fetch(api, {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${import.meta.env.VITE_API}/posts`, {
     method: "POST",
-    headers: { "Content-type": "application/json" },
+    headers: {
+      "Content-type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify({ content }),
   });
   return res.json();

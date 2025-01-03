@@ -10,7 +10,11 @@ import {
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import { blue } from "@mui/material/colors";
 
+import { useApp } from "../AppProvider";
+
 export default function Item({ post, remove }) {
+  const { auth } = useApp();
+
   return (
     <Card sx={{ mb: 3 }}>
       <CardContent>
@@ -27,9 +31,11 @@ export default function Item({ post, remove }) {
               {post.user.name}
             </Typography>
           </Box>
-          <IconButton size="small" onClick={() => remove(post.id)}>
-            <DeleteIcon sx={{ fontSize: 24 }} />
-          </IconButton>
+          {auth && auth.id === post.userId && (
+            <IconButton size="small" onClick={() => remove(post.id)}>
+              <DeleteIcon sx={{ fontSize: 24 }} />
+            </IconButton>
+          )}
         </Box>
 
         <Typography>{post.content}</Typography>

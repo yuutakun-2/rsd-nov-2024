@@ -4,22 +4,26 @@ import { Typography } from "@mui/material";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useApp } from "../AppProvider";
 
-const api = "http://localhost:8080/posts";
-
 async function fetchPosts() {
-  const res = await fetch(api);
+  const res = await fetch(`${import.meta.env.VITE_API}/posts`);
 
   return res.json();
 }
 
 async function deletePost(id) {
-  const res = await fetch(`${api}/${id}`, { method: "DELETE" });
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${import.meta.env.VITE_API}/posts/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   return res.json();
 }
 
 export default function Home() {
   const queryClient = useQueryClient();
-  const { showForm } = useApp();
+  const { showForm, auth } = useApp();
   const { data, error, isLoading } = useQuery("posts", fetchPosts);
 
   // useMutation accepts two parameters:
@@ -51,7 +55,7 @@ export default function Home() {
 
   return (
     <div>
-      {showForm && <Form />}
+      {auth && showForm && <Form />}
 
       {data.map((post) => (
         <Item key={post.id} post={post} remove={remove.mutate} />
