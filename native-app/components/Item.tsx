@@ -7,7 +7,8 @@ import { formatDistance, getTime } from "date-fns";
 import type { itemType } from "@/types/itemType";
 import { useTheme } from "@react-navigation/native";
 
-const api = "http://192.168.100.11:8080";
+// const api = "http://192.168.100.11:8080";
+const api = process.env.EXPO_PUBLIC_API_ROUTE;
 
 async function deletePost(id: number) {
   const res = await fetch(`${api}/posts/${id}`, {

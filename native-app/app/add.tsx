@@ -10,7 +10,8 @@ import {
 } from "react-native";
 import type { itemType } from "@/types/itemType";
 
-const api = "http://192.168.100.11:8080";
+// const api = "http://192.168.100.11:8080";
+const api = process.env.EXPO_PUBLIC_API_ROUTE;
 
 const addPost = async (content: string) => {
   const res = await fetch(`${api}/posts`, {

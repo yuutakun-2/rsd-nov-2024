@@ -55,7 +55,8 @@ const styles = StyleSheet.create({
   },
 });
 
-const api = "http://192.168.100.11:8080";
+// const api = "http://192.168.100.11:8080";
+const api = process.env.EXPO_PUBLIC_API_ROUTE;
 
 async function fetchPosts(): Promise<Item[]> {
   const response = await fetch(`${api}/posts`);
