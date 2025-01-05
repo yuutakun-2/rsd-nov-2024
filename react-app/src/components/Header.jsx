@@ -10,6 +10,7 @@ import {
     ArrowBack as BackIcon,
     Menu as MenuIcon,
     Add as AddIcon,
+    Search as SearchIcon,
     LightMode as LightModeIcon,
     DarkMode as DarkModeIcon,
 } from "@mui/icons-material";
@@ -51,6 +52,12 @@ export default function Header() {
 							<AddIcon />
 						</IconButton>
 					)}
+
+					<IconButton
+						color="inherit"
+						onClick={() => navigate("/search")}>
+						<SearchIcon />
+					</IconButton>
 
 					{mode == "dark" ? (
 						<IconButton

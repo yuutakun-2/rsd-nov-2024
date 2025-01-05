@@ -22,6 +22,37 @@ router.get('/posts', async (req, res) => {
     res.json(posts);
 });
 
+router.get('/posts/following', auth, async (req, res) => {
+    try {
+        // Get posts from users that the current user follows
+        const posts = await prisma.post.findMany({
+            where: {
+                user: {
+                    followers: {
+                        some: {
+                            followerId: res.locals.user.id
+                        }
+                    }
+                }
+            },
+            include: { 
+                user: true, 
+                likes: true,
+                comments: {
+                    include: { user: true }
+                }
+            },
+            take: 20,
+            orderBy: { id: 'desc' }
+        });
+
+        res.json(posts);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 router.get('/posts/:id', async (req, res) => {
     const { id } = req.params;
     const post = await prisma.post.findUnique({

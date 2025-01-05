@@ -6,55 +6,55 @@ const prisma = new PrismaClient();
 
 const { auth, isOwner } = require("../middlewares/auth");
 
-// Create a new comment
-router.post('/comments', auth, async (req, res) => {
-    const { content, postId } = req.body;
-    
-    try {
-        const comment = await prisma.comment.create({
-            data: {
-                content,
-                postId: parseInt(postId),
-                userId: req.user.id
-            },
-            include: {
-                user: true
-            }
-        });
-        
-        res.json(comment);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+router.post("/posts/:id/comments", auth, async (req, res) => {
+	const postId = req.params.id;
+    const userId = res.locals.user.id;
+	const { content } = req.body;
+
+	try {
+		const comment = await prisma.comment.create({
+			data: {
+				content,
+				postId: parseInt(postId),
+				userId: userId,
+			},
+			include: {
+				user: true,
+			},
+		});
+
+		res.json(comment);
+	} catch (err) {
+		res.status(500).json({ error: err.message });
+	}
 });
 
-// Delete a comment
-router.delete('/comments/:id', auth, async (req, res) => {
-    const commentId = parseInt(req.params.id);
-    
-    try {
-        // Check if comment exists and user is the owner
-        const comment = await prisma.comment.findUnique({
-            where: { id: commentId }
-        });
+router.delete("/comments/:id", auth, async (req, res) => {
+	const commentId = parseInt(req.params.id);
 
-        if (!comment) {
-            return res.status(404).json({ error: "Comment not found" });
-        }
+	try {
+		// Check if comment exists and user is the owner
+		const comment = await prisma.comment.findUnique({
+			where: { id: commentId },
+		});
 
-        if (comment.userId !== req.user.id) {
-            return res.status(403).json({ error: "Not authorized" });
-        }
+		if (!comment) {
+			return res.status(404).json({ error: "Comment not found" });
+		}
 
-        // Delete the comment
-        await prisma.comment.delete({
-            where: { id: commentId }
-        });
+		if (comment.userId !== res.locals.user.id) {
+			return res.status(403).json({ error: "Not authorized" });
+		}
 
-        res.json({ message: "Comment deleted successfully" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+		// Delete the comment
+		await prisma.comment.delete({
+			where: { id: commentId },
+		});
+
+		res.json({ message: "Comment deleted successfully" });
+	} catch (err) {
+		res.status(500).json({ error: err.message });
+	}
 });
 
 module.exports = { commentsRouter: router };

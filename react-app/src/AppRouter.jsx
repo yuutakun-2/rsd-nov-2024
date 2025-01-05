@@ -5,6 +5,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Post from "./pages/Post";
+import Profile from "./pages/Profile";
+import Search from "./pages/Search";
 
 export default function AppRouter() {
     return <BrowserRouter>
@@ -12,6 +14,8 @@ export default function AppRouter() {
             <Route element={<App />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/posts/:id" element={<Post />} />
+                <Route path="/users/:id" element={<Profile />} />
+                <Route path="/search" element={<Search />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
             </Route>

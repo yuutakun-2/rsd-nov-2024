@@ -19,6 +19,8 @@ model User {
     posts    Post[]
     likes    Like[]
     comments Comment[]
+    follows  Follow[] @relation("follower")
+    followers Follow[] @relation("following")
     created  DateTime @default(now())
 }
 
@@ -48,4 +50,14 @@ model Comment {
     user   User   @relation(fields: [userId], references: [id])
     userId Int
     created DateTime @default(now())
+}
+
+model Follow {
+    id        Int    @id @default(autoincrement())
+    follower  User   @relation("follower", fields: [followerId], references: [id])
+    followerId Int
+    following User   @relation("following", fields: [followingId], references: [id])
+    followingId Int
+    created   DateTime @default(now())
+    @@unique([followerId, followingId])
 }

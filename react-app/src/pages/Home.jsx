@@ -1,75 +1,43 @@
-import { Typography } from "@mui/material";
+import { useState } from "react";
+import { Box, Tabs, Tab } from "@mui/material";
+import { useNavigate, useSearchParams } from "react-router";
 
-import Item from "../components/Item";
 import Form from "../components/Form";
-
-import { useQuery, useMutation, useQueryClient } from "react-query";
+import Posts from "../components/Posts";
 import { useApp } from "../AppProvider";
 
-const api = "http://localhost:8080/posts";
-
-async function fetchPosts() {
-    const res = await fetch(api);
-
-    return res.json();
-}
-
-async function deletePost(id) {
-    const token = localStorage.getItem("token");
-    
-    const res = await fetch(`${api}/${id}`, {
-        method: 'DELETE',
-        headers: {
-            Authorization: `Bearer ${token}`,
-        }
-    });
-
-    return res.json();
-}
-
 export default function Home() {
-    const { auth } = useApp();
+    const { auth, showForm } = useApp();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const tab = searchParams.get("tab") || "latest";
+    const navigate = useNavigate();
 
-    const { data, error, isLoading } = useQuery("posts", fetchPosts);
-    const queryClient = useQueryClient();
+    const handleTabChange = (event, newValue) => {
+        setSearchParams({ tab: newValue });
+    };
 
-    const { showForm } = useApp();
+    return (
+        <>
+            <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+                <Tabs 
+                    value={tab} 
+                    onChange={handleTabChange}
+                    variant="fullWidth"
+                >
+                    <Tab 
+                        label="Latest" 
+                        value="latest"
+                    />
+                    <Tab 
+                        label="Following" 
+                        value="following"
+                        disabled={!auth}
+                    />
+                </Tabs>
+            </Box>
 
-	const remove = useMutation(deletePost, {
-        onMutate: id => {
-            queryClient.setQueryData("posts", old => {
-                return old.filter(post => {
-                    return post.id != id;
-                });
-            });
-        },
-        // onSuccess: async () => {
-        //     await queryClient.cancelQueries();
-        //     await queryClient.invalidateQueries("posts");
-        // }
-    });
-
-    if(error) {
-        return <Typography>{error}</Typography>
-    }
-
-    if (isLoading) {
-		return <Typography>Loading...</Typography>;
-	}
-
-	return (
-		<>
-			{auth && showForm && <Form />}
-            
-			{data.map(post => {
-				return (
-					<Item
-						key={post.id}
-						post={post}
-						remove={remove.mutate}
-					/>
-				);
-			})}
-		</>
-	);
+            {auth && showForm && <Form />}
+            <Posts type={tab} />
+        </>
+    );
 }

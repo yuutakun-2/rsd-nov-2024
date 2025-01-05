@@ -58,12 +58,14 @@ export default function Item({ post, remove }) {
 	const { mutate: like } = useMutation(likePost, {
 		onSuccess: () => {
 			queryClient.invalidateQueries("posts");
+			queryClient.invalidateQueries("user");
 		},
 	});
 
 	const { mutate: unlike } = useMutation(unlikePost, {
 		onSuccess: () => {
 			queryClient.invalidateQueries("posts");
+			queryClient.invalidateQueries("user");
 		},
 	});
 
@@ -92,9 +94,22 @@ export default function Item({ post, remove }) {
 								width: 32,
 								height: 32,
 								background: blue[500],
+								cursor: 'pointer'
 							}}
-						/>
-						<Typography sx={{ fontWeight: "bold" }}>
+							onClick={() => navigate(`/users/${post.user.id}`)}
+						>
+							{post.user.name[0]}
+						</Avatar>
+						<Typography 
+							sx={{ 
+								fontWeight: "bold",
+								cursor: 'pointer',
+								'&:hover': {
+									textDecoration: 'underline'
+								}
+							}}
+							onClick={() => navigate(`/users/${post.user.id}`)}
+						>
 							{post.user.name}
 						</Typography>
 					</Box>
