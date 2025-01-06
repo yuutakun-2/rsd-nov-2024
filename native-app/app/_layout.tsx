@@ -18,6 +18,10 @@ export default function RootLayout() {
 						name="add"
 						options={{ title: "New Post" }}
 					/>
+					<Stack.Screen
+						name="posts/[id]"
+						options={{ title: "Post" }}
+					/>
 				</Stack>
 			</ThemeProvider>
 		</QueryClientProvider>

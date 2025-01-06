@@ -13,7 +13,7 @@ import { useApp } from "../AppProvider";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import { blue } from "@mui/material/colors";
 import { useMutation, useQueryClient } from "react-query";
-
+import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import {
@@ -21,6 +21,8 @@ import {
 	Favorite as LikedIcon,
 	ChatBubbleOutline as CommentIcon,
 } from "@mui/icons-material";
+
+import UserListDialog from "./UserListDialog";
 
 const API = "http://localhost:8080";
 
@@ -48,10 +50,23 @@ const unlikePost = async postId => {
 	return res.json();
 };
 
-export default function Item({ post, remove }) {
+const deletePost = async (id) => {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/posts/${id}`, {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!res.ok) throw new Error("Failed to delete post");
+    return res.json();
+};
+
+export default function Item({ post, navigateOnDelete = false }) {
 	const { auth } = useApp();
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
+    const [showLikes, setShowLikes] = useState(false);
 
 	const isLiked = post.likes?.some(like => like.userId === auth?.id);
 
@@ -68,6 +83,19 @@ export default function Item({ post, remove }) {
 			queryClient.invalidateQueries("user");
 		},
 	});
+
+    const { mutate: remove } = useMutation(deletePost, {
+        onSuccess: () => {
+            // Invalidate all posts queries to update lists everywhere
+            queryClient.invalidateQueries("posts");
+            // Also invalidate user queries since post count might change
+            queryClient.invalidateQueries("user");
+            // Navigate to home if navigateOnDelete is true
+            if (navigateOnDelete) {
+                navigate('/');
+            }
+        },
+    });
 
 	const handleLike = () => {
 		if (!auth) return;
@@ -117,7 +145,7 @@ export default function Item({ post, remove }) {
 						<IconButton
 							size="small"
 							onClick={() => remove(post.id)}>
-							<DeleteIcon sx={{ fontSize: 24 }} />
+							<DeleteIcon sx={{ fontSize: 24, color: 'grey' }} />
 						</IconButton>
 					)}
 				</Box>
@@ -149,7 +177,9 @@ export default function Item({ post, remove }) {
 						</IconButton>
 						<Button
 							variant="text"
-							size="small">
+							size="small"
+							onClick={() => setShowLikes(true)}
+							sx={{ cursor: 'pointer' }}>
 							{post.likes?.length || 0}
 						</Button>
 					</ButtonGroup>
@@ -172,6 +202,14 @@ export default function Item({ post, remove }) {
 					</ButtonGroup>
 				</Box>
 			</CardContent>
+
+            <UserListDialog 
+                open={showLikes}
+                onClose={() => setShowLikes(false)}
+                id={post.id}
+                type="likes"
+                title="Liked by"
+            />
 		</Card>
 	);
 }

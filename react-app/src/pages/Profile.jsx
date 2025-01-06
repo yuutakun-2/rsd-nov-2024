@@ -4,12 +4,15 @@ import {
 	Typography,
 	CircularProgress,
 	Avatar,
+	Button
 } from "@mui/material";
 import { useParams } from "react-router";
 import { useQuery } from "react-query";
+import { useState } from "react";
 
 import Item from "../components/Item";
 import FollowButton from "../components/FollowButton";
+import UserListDialog from "../components/UserListDialog";
 import { useApp } from "../AppProvider";
 
 const API = "http://localhost:8080";
@@ -23,12 +26,21 @@ const fetchUser = async id => {
 export default function Profile() {
 	const { id } = useParams();
 	const { auth } = useApp();
+    const [dialogType, setDialogType] = useState(null);
 
 	const {
 		data: user,
 		isLoading,
 		error,
 	} = useQuery(["user", id], () => fetchUser(id));
+
+    const handleOpenDialog = (type) => {
+        setDialogType(type);
+    };
+
+    const handleCloseDialog = () => {
+        setDialogType(null);
+    };
 
 	if (isLoading) {
 		return (
@@ -73,12 +85,24 @@ export default function Profile() {
 				)}
                 
                 <Box sx={{ display: 'flex', gap: 4, mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                        {user._count?.followers || 0} followers
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        {user._count?.following || 0} following
-                    </Typography>
+                    <Button 
+                        variant="text" 
+                        color="inherit"
+                        onClick={() => handleOpenDialog('followers')}
+                    >
+                        <Typography variant="body2" color="text.secondary">
+                            {user.followerCount || 0} followers
+                        </Typography>
+                    </Button>
+                    <Button 
+                        variant="text"
+                        color="inherit"
+                        onClick={() => handleOpenDialog('following')}
+                    >
+                        <Typography variant="body2" color="text.secondary">
+                            {user.followingCount || 0} following
+                        </Typography>
+                    </Button>
                 </Box>
 
                 <FollowButton 
@@ -92,6 +116,14 @@ export default function Profile() {
 					<Item key={post.id} post={post} />
 				))}
 			</Box>
+
+            <UserListDialog 
+                open={!!dialogType}
+                onClose={handleCloseDialog}
+                id={user.id}
+                type={dialogType}
+                title={dialogType === 'followers' ? 'Followers' : 'Following'}
+            />
 		</Container>
 	);
 }

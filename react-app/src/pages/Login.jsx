@@ -14,7 +14,8 @@ async function postLogin(data) {
 	});
 
 	if (!res.ok) {
-		throw new Error("Network response was not ok");
+		const error = await res.json();
+		throw new Error(error.msg || "Login failed");
 	}
 
 	return res.json();
@@ -31,11 +32,17 @@ export default function Login() {
 	} = useForm();
 
 	const login = useMutation(postLogin, {
-		onSuccess: data => {
-			setAuth(data.user);
-			localStorage.setItem("token", data.token);
+		onSuccess: ({ user, token }) => {
+			// First store the token
+			localStorage.setItem("token", token);
+			// Then set the auth state
+			setAuth(user);
+			// Finally navigate
 			navigate("/");
 		},
+		onError: (error) => {
+			console.error("Login failed:", error);
+		}
 	});
 
 	const submitLogin = data => {

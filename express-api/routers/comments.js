@@ -12,6 +12,16 @@ router.post("/posts/:id/comments", auth, async (req, res) => {
 	const { content } = req.body;
 
 	try {
+        // Get post to check owner
+        const post = await prisma.post.findUnique({
+            where: { id: parseInt(postId) },
+            select: { userId: true }
+        });
+
+        if (!post) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+
 		const comment = await prisma.comment.create({
 			data: {
 				content,
@@ -22,6 +32,19 @@ router.post("/posts/:id/comments", auth, async (req, res) => {
 				user: true,
 			},
 		});
+
+        // Create notification if the comment is not from post owner
+        if (post.userId !== userId) {
+            await prisma.notification.create({
+                data: {
+                    type: "COMMENT",
+                    userId: post.userId,
+                    actorId: userId,
+                    postId: parseInt(postId),
+                    read: false,
+                }
+            });
+        }
 
 		res.json(comment);
 	} catch (err) {

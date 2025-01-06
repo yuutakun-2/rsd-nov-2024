@@ -66,7 +66,7 @@ export default function Post() {
 
     return (
         <Container maxWidth="sm" sx={{ py: 4 }}>
-            <Item post={post} />
+            <Item post={post} navigateOnDelete={true} />
             
             <Box sx={{ mt: 3 }}>
                 <Box sx={{ mt: 2 }}>

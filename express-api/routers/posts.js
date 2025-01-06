@@ -94,42 +94,70 @@ router.post('/posts', auth, async (req, res) => {
 router.delete('/posts/:id', auth, isOwner("post"), async (req, res) => {
     const { id } = req.params;
 
-    const post = await prisma.post.delete({
-        where: { id: Number(id) }
-    });
+    try {
+        // Delete all likes for this post
+        await prisma.like.deleteMany({
+            where: { postId: Number(id) }
+        });
 
-    res.json(post);
+        // Delete all comments for this post
+        await prisma.comment.deleteMany({
+            where: { postId: Number(id) }
+        });
+
+        // Now delete the post
+        const post = await prisma.post.delete({
+            where: { id: Number(id) }
+        });
+
+        res.json(post);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 router.post('/posts/:id/like', auth, async (req, res) => {
     const { id } = req.params;
-    const user = res.locals.user;
+    const userId = res.locals.user.id;
 
     try {
+        // Check if post exists and get post owner
+        const post = await prisma.post.findUnique({
+            where: { id: Number(id) },
+            select: { userId: true }
+        });
+
+        if (!post) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+
         const like = await prisma.like.create({
             data: {
                 postId: Number(id),
-                userId: user.id,
+                userId: userId,
             }
         });
 
-        const post = await prisma.post.findUnique({
-            where: { id: Number(id) },
-            include: { 
-                user: true, 
-                likes: true,
-                comments: {
-                    include: { user: true }
+        // Create notification if the like is not from post owner
+        if (post.userId !== userId) {
+            await prisma.notification.create({
+                data: {
+                    type: "LIKE",
+                    userId: post.userId,
+                    actorId: userId,
+                    postId: Number(id),
+                    read: false,
                 }
-            }
-        });
-
-        res.json(post);
-    } catch(err) {
-        if(err.code === 'P2002') {
-            return res.status(400).json({ msg: 'Already liked' });
+            });
         }
-        res.status(500).json({ msg: err.message });
+
+        res.json(like);
+    } catch (error) {
+        if (error.code === 'P2002') {
+            return res.status(400).json({ error: "Already liked" });
+        }
+        res.status(500).json({ error: error.message });
     }
 });
 
@@ -157,6 +185,33 @@ router.delete('/posts/:id/like', auth, async (req, res) => {
         });
 
         res.json(post);
+    } catch(err) {
+        res.status(500).json({ msg: err.message });
+    }
+});
+
+router.get('/posts/:id/likes', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const likedUsers = await prisma.like.findMany({
+            where: { postId: Number(id) },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        username: true,
+                        bio: true,
+                        created: true
+                    }
+                }
+            }
+        });
+
+        // Extract just the user objects from the likes
+        const users = likedUsers.map(like => like.user);
+        res.json(users);
     } catch(err) {
         res.status(500).json({ msg: err.message });
     }

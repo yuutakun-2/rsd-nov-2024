@@ -1,6 +1,7 @@
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 
 import { useTheme } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
 import Text from "../components/Text";
 
@@ -58,6 +59,8 @@ export default function Item({ item }: { item: ItemType }) {
 
 	const { colors } = useTheme();
 
+	const router = useRouter();
+
 	const remove = useMutation(deleteItem, {
 		onMutate: async id => {
 			await queryClient.cancelQueries("posts");
@@ -109,17 +112,23 @@ export default function Item({ item }: { item: ItemType }) {
 								color="red"
 							/>
 						</TouchableOpacity>
-						<Text style={{ color: "gray" }}>12</Text>
+						<Text style={{ color: "gray" }}>{item.likes?.length || 0}</Text>
 					</View>
 					<View style={{ flexDirection: "row", gap: 8 }}>
-						<TouchableOpacity>
+						<TouchableOpacity 
+							style={{ flexDirection: "row", gap: 8 }}
+							onPress={() => router.push({
+								pathname: "/posts/[id]",
+								params: { id: item.id }
+							})}
+						>
 							<Ionicons
 								name="chatbubble-outline"
 								size={18}
 								color="green"
 							/>
+							<Text style={{ color: "gray" }}>{item.comments?.length || 0}</Text>
 						</TouchableOpacity>
-						<Text style={{ color: "gray" }}>5</Text>
 					</View>
 
 					<TouchableOpacity>

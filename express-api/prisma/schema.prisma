@@ -21,6 +21,8 @@ model User {
     comments Comment[]
     follows  Follow[] @relation("follower")
     followers Follow[] @relation("following")
+    notifications        Notification[]  @relation("notificationReceiver")
+    notificationsActed   Notification[] @relation("notificationActor")
     created  DateTime @default(now())
 }
 
@@ -31,6 +33,7 @@ model Post {
     userId  Int
     likes   Like[]
     comments Comment[]
+    notifications Notification[]
     created DateTime @default(now())
 }
 
@@ -60,4 +63,17 @@ model Follow {
     followingId Int
     created   DateTime @default(now())
     @@unique([followerId, followingId])
+}
+
+model Notification {
+    id        Int      @id @default(autoincrement())
+    type      String   // "LIKE", "COMMENT", or "FOLLOW"
+    read      Boolean  @default(false)
+    user      User     @relation("notificationReceiver", fields: [userId], references: [id])
+    userId    Int
+    actor     User     @relation("notificationActor", fields: [actorId], references: [id])
+    actorId   Int
+    post      Post?    @relation(fields: [postId], references: [id])
+    postId    Int?
+    created   DateTime @default(now())
 }

@@ -1,12 +1,11 @@
 import { createContext, useContext, useState, useMemo, useEffect } from "react";
 import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
-
 import { QueryClientProvider, QueryClient } from "react-query";
-
 import AppRouter from "./AppRouter";
 
 const AppContext = createContext();
 const queryClient = new QueryClient();
+const API = import.meta.env.VITE_API || "http://localhost:8080";
 
 export function useApp() {
 	return useContext(AppContext);
@@ -16,26 +15,43 @@ export default function AppProvider() {
 	const [showForm, setShowForm] = useState(false);
 	const [showDrawer, setShowDrawer] = useState(false);
 	const [mode, setMode] = useState("dark");
-	const [auth, setAuth] = useState(false);
+	const [auth, setAuth] = useState(null);
 
+    // Verify user session on app load
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            fetch(`${import.meta.env.VITE_API}/verify`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            })
-                .then(res => res.json())
-                .then(user => {
-                    setAuth(user);
-                })
-                .catch(() => {
-                    setAuth(false);
-                    localStorage.removeItem("token");
+        const verifyUser = async () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                setAuth(null);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API}/verify`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 });
-        }
-    }, []);
+
+                if (!res.ok) {
+                    throw new Error('Verification failed');
+                }
+
+                const user = await res.json();
+                if (user && user.name) {
+                    setAuth(user);
+                } else {
+                    throw new Error('Invalid user data');
+                }
+            } catch (error) {
+                console.error('Auth verification failed:', error);
+                setAuth(null);
+                localStorage.removeItem("token");
+            }
+        };
+
+        verifyUser();
+    }, []); // Run once on app load
 
 	const theme = useMemo(() => {
 		return createTheme({
@@ -57,12 +73,12 @@ export default function AppProvider() {
 				auth,
 				setAuth,
 			}}>
-			<QueryClientProvider client={queryClient}>
-				<ThemeProvider theme={theme}>
+			<ThemeProvider theme={theme}>
+				<CssBaseline />
+				<QueryClientProvider client={queryClient}>
 					<AppRouter />
-					<CssBaseline />
-				</ThemeProvider>
-			</QueryClientProvider>
+				</QueryClientProvider>
+			</ThemeProvider>
 		</AppContext.Provider>
 	);
 }

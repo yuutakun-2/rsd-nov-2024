@@ -32,11 +32,9 @@ export default function Form() {
     const queryClient = useQueryClient();
 
     const add = useMutation(postPost, {
-        onSuccess: async item => {
-            await queryClient.cancelQueries();
-            await queryClient.setQueryData("posts", old => {
-                return [ item, ...old ];
-            })
+        onSuccess: async () => {
+            queryClient.invalidateQueries("posts");
+            if(inputRef.current) inputRef.current.value = "";
         }
     });
 
