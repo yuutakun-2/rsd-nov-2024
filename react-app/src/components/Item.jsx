@@ -15,6 +15,7 @@ import {
   Share as ShareIcon,
   MoreVert as MoreVertIcon,
 } from "@mui/icons-material";
+import { useNavigate } from "react-router";
 import { blue } from "@mui/material/colors";
 
 import { useApp } from "../AppProvider";
@@ -31,7 +32,7 @@ const likePost = async (postId) => {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to unlike post.");
+    throw new Error("Failed to like post.");
   }
   return res.json();
 };
@@ -54,6 +55,7 @@ const unlikePost = async (postId) => {
 export default function Item({ post, remove }) {
   const { auth } = useApp();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const like = useMutation(likePost, {
     onSuccess: () => {
@@ -119,7 +121,10 @@ export default function Item({ post, remove }) {
             <Typography variant="body2">{post.likes?.length || 0}</Typography>
           </Stack>
           <Stack direction="row" alignItems="center" sx={{ gap: 1 }}>
-            <IconButton size="small">
+            <IconButton
+              size="small"
+              onClick={() => navigate(`/posts/${post.id}`)}
+            >
               <CommentIcon fontSize="small" />
             </IconButton>
             <Typography variant="body2">

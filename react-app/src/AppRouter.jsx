@@ -3,6 +3,7 @@ import App from "./App";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Home from "./components/Home";
+import Post from "../pages/Post";
 
 export default function AppRouter() {
   return (
@@ -12,6 +13,7 @@ export default function AppRouter() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/posts/:id" element={<Post />} />
         </Route>
       </Routes>
     </BrowserRouter>

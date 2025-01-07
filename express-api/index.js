@@ -21,6 +21,14 @@ app.get("/posts", async (req, res) => {
     include: {
       user: true,
       likes: true,
+      comments: {
+        include: {
+          user: true,
+        },
+        orderBy: {
+          id: "desc",
+        },
+      },
     },
     take: 20,
     orderBy: { id: "desc" },
@@ -37,6 +45,15 @@ app.get("/posts/:id", async (req, res) => {
     },
     include: {
       user: true,
+      likes: true,
+      comments: {
+        include: {
+          user: true,
+        },
+        orderBy: {
+          id: "desc",
+        },
+      },
     },
   });
 

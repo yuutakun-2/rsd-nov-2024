@@ -6,7 +6,7 @@ import { useApp } from "../AppProvider";
 
 async function fetchPosts() {
   const res = await fetch(`${import.meta.env.VITE_API}/posts`);
-
+  if (!res.ok) throw new Error("Failed to fetch post");
   return res.json();
 }
 
