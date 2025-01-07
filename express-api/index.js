@@ -26,9 +26,7 @@ app.get("/posts", async (req, res) => {
     orderBy: { id: "desc" },
   });
 
-  setTimeout(() => {
-    return res.json(posts);
-  }, 2000);
+  return res.json(posts);
 });
 
 app.get("/posts/:id", async (req, res) => {
@@ -110,7 +108,7 @@ app.delete("/posts/:id/like", auth, async (req, res) => {
   const user = res.locals.user;
 
   try {
-    const dislike = await prisma.like.delete({
+    const dislike = await prisma.like.deleteMany({
       where: {
         postId: Number(id),
         userId: user.id,

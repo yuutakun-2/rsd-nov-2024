@@ -27,7 +27,7 @@ export default function Header() {
               <MenuIcon />
             </IconButton>
           ) : (
-            <IconButton color="inherit" onClick={() => navigate("/login")}>
+            <IconButton color="inherit" onClick={() => navigate(-1)}>
               <ArrowBackIcon />
             </IconButton>
           )}

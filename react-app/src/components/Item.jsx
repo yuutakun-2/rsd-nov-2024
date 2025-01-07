@@ -55,7 +55,7 @@ export default function Item({ post, remove }) {
   const { auth } = useApp();
   const queryClient = useQueryClient();
 
-  const { mutate: like } = useMutation(likePost, {
+  const like = useMutation(likePost, {
     onSuccess: () => {
       queryClient.invalidateQueries("posts");
     },
@@ -66,6 +66,17 @@ export default function Item({ post, remove }) {
       queryClient.invalidateQueries("posts");
     },
   });
+
+  const isLiked = post.likes?.some((like) => like.userId === auth?.id);
+
+  const handleLike = () => {
+    if (!auth) return;
+    if (isLiked) {
+      return unlike.mutate(post.id);
+    } else {
+      return like.mutate(post.id);
+    }
+  };
 
   return (
     <Card sx={{ mb: 3 }}>
@@ -98,8 +109,12 @@ export default function Item({ post, remove }) {
           mt={2}
         >
           <Stack direction="row" alignItems="center" sx={{ gap: 1 }}>
-            <IconButton size="small" onClick={() => like(post.id)}>
-              <FavoriteIcon fontSize="small" />
+            <IconButton size="small" onClick={handleLike}>
+              {isLiked ? (
+                <FavoriteIcon sx={{ fontSize: 24, color: "red" }} />
+              ) : (
+                <FavoriteIcon sx={{ fontSize: 24 }} />
+              )}
             </IconButton>
             <Typography variant="body2">{post.likes?.length || 0}</Typography>
           </Stack>
