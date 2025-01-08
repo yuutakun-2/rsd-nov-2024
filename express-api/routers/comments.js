@@ -4,11 +4,12 @@ const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-const { auth, isOwner } = require("../middlewares/auth");
+const { auth } = require("../middlewares/auth");
+const { isCommentOwner } = require("../middlewares/ownership");
 
 router.post("/posts/:id/comments", auth, async (req, res) => {
 	const postId = req.params.id;
-    const userId = res.locals.user.id;
+    const userId = req.user.id;
 	const { content } = req.body;
 
 	try {
@@ -52,23 +53,10 @@ router.post("/posts/:id/comments", auth, async (req, res) => {
 	}
 });
 
-router.delete("/comments/:id", auth, async (req, res) => {
+router.delete("/comments/:id", auth, isCommentOwner, async (req, res) => {
 	const commentId = parseInt(req.params.id);
 
 	try {
-		// Check if comment exists and user is the owner
-		const comment = await prisma.comment.findUnique({
-			where: { id: commentId },
-		});
-
-		if (!comment) {
-			return res.status(404).json({ error: "Comment not found" });
-		}
-
-		if (comment.userId !== res.locals.user.id) {
-			return res.status(403).json({ error: "Not authorized" });
-		}
-
 		// Delete the comment
 		await prisma.comment.delete({
 			where: { id: commentId },

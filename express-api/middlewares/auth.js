@@ -11,37 +11,28 @@ const prisma = new PrismaClient();
  * @param {express.NextFunction} next
  */
 async function auth(req, res, next) {
-    const authorization = req.headers.authorization;
-    const token = authorization?.split(" ")[1];
-    if (!token) {
-        return res.status(401).json({ msg: "token is required" });
-    }
-
     try {
+        // Get token from header
+        const authHeader = req.header('Authorization');
+        if (!authHeader) {
+            return res.status(401).json({ msg: "no token found" });
+        }
+
+        // Verify token
+        const token = authHeader.replace('Bearer ', '');
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        // Get fresh user data with counts
+
+        // Get user from database
         const user = await prisma.user.findUnique({
-            where: { id: decoded.id },
-            include: {
-                _count: {
-                    select: {
-                        followers: true,
-                        follows: true
-                    }
-                }
-            }
+            where: { id: decoded.id }
         });
 
         if (!user) {
             throw new Error('User not found');
         }
-        
-        // Add counts to user object
-        res.locals.user = {
-            ...user,
-            followersCount: user._count.followers,
-            followingCount: user._count.follows
-        };
+
+        // Set user data on request object
+        req.user = user;
         next();
     } catch (error) {
         console.error('Auth error:', error);
@@ -49,21 +40,6 @@ async function auth(req, res, next) {
     }
 }
 
-function isOwner(type) {
-    return async (req, res, next) => {
-        if(type === "post") {
-            const id = req.params.id;
-            const post = await prisma.post.findUnique({
-                where: { id: Number(id) }
-            });
-
-            if (res.locals.user.id === post.userId) {
-				return next();
-			}
-        }
-
-        res.status(403).json({ msg: "forbidden" });
-    };
-}
-
-module.exports = { auth, isOwner };
+module.exports = {
+    auth
+};

@@ -4,7 +4,8 @@ const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-const { auth, isOwner } = require("../middlewares/auth");
+const { auth } = require("../middlewares/auth");
+const { isPostOwner } = require("../middlewares/ownership");
 
 router.get('/posts', async (req, res) => {
     const posts = await prisma.post.findMany({
@@ -30,7 +31,7 @@ router.get('/posts/following', auth, async (req, res) => {
                 user: {
                     followers: {
                         some: {
-                            followerId: res.locals.user.id
+                            followerId: req.user.id
                         }
                     }
                 }
@@ -71,7 +72,7 @@ router.get('/posts/:id', async (req, res) => {
 
 router.post('/posts', auth, async (req, res) => {
     const { content } = req.body;
-    const user = res.locals.user;
+    const user = req.user;
 
     if(!content) {
         return res.status(400).json({ msg: 'content is required' });
@@ -91,7 +92,7 @@ router.post('/posts', auth, async (req, res) => {
     res.status(201).json(post);
 });
 
-router.delete('/posts/:id', auth, isOwner("post"), async (req, res) => {
+router.delete('/posts/:id', auth, isPostOwner, async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -119,7 +120,7 @@ router.delete('/posts/:id', auth, isOwner("post"), async (req, res) => {
 
 router.post('/posts/:id/like', auth, async (req, res) => {
     const { id } = req.params;
-    const userId = res.locals.user.id;
+    const userId = req.user.id;
 
     try {
         // Check if post exists and get post owner
@@ -163,7 +164,7 @@ router.post('/posts/:id/like', auth, async (req, res) => {
 
 router.delete('/posts/:id/like', auth, async (req, res) => {
     const { id } = req.params;
-    const user = res.locals.user;
+    const user = req.user;
 
     try {
         const result = await prisma.like.deleteMany({

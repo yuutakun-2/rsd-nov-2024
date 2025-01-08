@@ -14,7 +14,7 @@ router.get("/notifications", auth, async (req, res) => {
     try {
         const notifications = await prisma.notification.findMany({
             where: {
-                userId: res.locals.user.id
+                userId: req.user.id
             },
             include: {
                 actor: {
@@ -48,7 +48,7 @@ router.put("/notifications/read", auth, async (req, res) => {
     try {
         await prisma.notification.updateMany({
             where: {
-                userId: res.locals.user.id,
+                userId: req.user.id,
                 read: false
             },
             data: {
@@ -76,7 +76,7 @@ router.put("/notifications/:id/read", auth, async (req, res) => {
         }
 
         // Check if the notification belongs to the authenticated user
-        if (notification.userId !== res.locals.user.id) {
+        if (notification.userId !== req.user.id) {
             return res.status(403).json({ error: "Not authorized" });
         }
 
@@ -108,7 +108,7 @@ router.put("/notifications/:id/read", auth, async (req, res) => {
 
 router.get("/verify", auth, async (req, res) => {
     const user = await prisma.user.findUnique({
-        where: { id: res.locals.user.id },
+        where: { id: req.user.id },
         include: {
             _count: {
                 select: {
@@ -128,13 +128,14 @@ router.get("/verify", auth, async (req, res) => {
     });
 });
 
-router.get("/users/:id", async (req, res) => {
+router.get("/users/:id", auth, async (req, res) => {
     const userId = parseInt(req.params.id);
-
     try {
         const user = await prisma.user.findUnique({
             where: { id: userId },
             include: {
+                followers: true,
+                follows: true,
                 posts: {
                     orderBy: { id: 'desc' },
                     include: {
@@ -144,14 +145,6 @@ router.get("/users/:id", async (req, res) => {
                             include: { user: true }
                         }
                     }
-                },
-                follows: true,
-                followers: true,
-                _count: {
-                    select: {
-                        follows: true,
-                        followers: true
-                    }
                 }
             }
         });
@@ -160,18 +153,26 @@ router.get("/users/:id", async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Remove password from response and add counts
-        const { password, follows, followers, _count, ...userWithoutPassword } = user;
+        // Check if the current user is following this user
+        const isFollowing = await prisma.follow.findFirst({
+            where: {
+                followerId: req.user.id,
+                followingId: userId
+            }
+        });
+
+        const { password, followers, follows, ...userWithoutPassword } = user;
         res.json({
             ...userWithoutPassword,
-            followingCount: _count.follows,
-            followerCount: _count.followers,
-            following: follows,
-            followers
+            isFollowing: !!isFollowing,
+            followerCount: followers.length,
+            followingCount: follows.length,
+            followers,
+            following: follows
         });
     } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: error.message });
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -214,7 +215,9 @@ router.post("/users", async (req, res) => {
 		data: { name, username, bio, password: hash },
 	});
 
-	res.status(201).json(user);
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+	res.status(201).json(userWithoutPassword);
 });
 
 router.post("/login", async (req, res) => {
@@ -267,81 +270,84 @@ router.post("/login", async (req, res) => {
 // Follow a user
 router.post("/users/:id/follow", auth, async (req, res) => {
     const followingId = parseInt(req.params.id);
-    const followerId = res.locals.user.id;
+    const followerId = req.user.id;
 
     try {
         // Check if trying to follow self
         if (followerId === followingId) {
-            return res.status(400).json({ error: "Cannot follow yourself" });
+            return res.status(400).json({ error: 'Cannot follow yourself' });
         }
 
-        // Check if user exists
-        const user = await prisma.user.findUnique({
-            where: { id: followingId }
+        // Check if already following
+        const existingFollow = await prisma.follow.findFirst({
+            where: {
+                followerId,
+                followingId
+            }
         });
 
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
+        if (existingFollow) {
+            return res.status(400).json({ error: 'Already following this user' });
         }
 
         // Create follow relationship
-        const follow = await prisma.follow.create({
+        await prisma.follow.create({
             data: {
                 followerId,
                 followingId
-            },
+            }
         });
 
         // Create notification for the user being followed
         await prisma.notification.create({
             data: {
-                type: "FOLLOW",
+                type: 'follow',
                 userId: followingId,
-                actorId: followerId,
-                read: false,
+                actorId: followerId
             }
         });
 
-        res.json(follow);
+        res.json({ success: true });
     } catch (error) {
-        // Handle unique constraint violation
-        if (error.code === 'P2002') {
-            return res.status(400).json({ error: "Already following this user" });
-        }
-        console.error(error.message);
-        res.status(500).json({ error: error.message });
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
 // Unfollow a user
 router.delete("/users/:id/follow", auth, async (req, res) => {
     const followingId = parseInt(req.params.id);
-    const followerId = res.locals.user.id;
+    const followerId = req.user.id;
 
     try {
         // Check if trying to unfollow self
         if (followerId === followingId) {
-            return res.status(400).json({ error: "Cannot unfollow yourself" });
+            return res.status(400).json({ error: 'Cannot unfollow yourself' });
         }
 
-        // Delete follow relationship
-        const follow = await prisma.follow.delete({
+        // Check if actually following
+        const follow = await prisma.follow.findFirst({
             where: {
-                followerId_followingId: {
-                    followerId,
-                    followingId
-                }
+                followerId,
+                followingId
             }
         });
 
-        res.json(follow);
-    } catch (error) {
-        // Handle case when not following
-        if (error.code === 'P2025') {
-            return res.status(404).json({ error: "Not following this user" });
+        if (!follow) {
+            return res.status(400).json({ error: 'Not following this user' });
         }
-        console.error(error.message);
-        res.status(500).json({ error: error.message });
+
+        // Remove follow relationship
+        await prisma.follow.delete({
+            where: {
+                id: follow.id
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
