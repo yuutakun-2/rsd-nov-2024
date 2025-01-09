@@ -74,9 +74,9 @@ export default function Item({ post, remove }) {
   const handleLike = () => {
     if (!auth) return;
     if (isLiked) {
-      return unlike.mutate(post.id);
+      unlike.mutate(post.id);
     } else {
-      return like.mutate(post.id);
+      like.mutate(post.id);
     }
   };
 

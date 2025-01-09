@@ -4,6 +4,7 @@ import { useQuery } from "react-query";
 import { useParams } from "react-router";
 import Comment from "../src/components/Comment";
 import { Box, CircularProgress } from "@mui/material";
+import CommentForm from "../src/components/CommentForm";
 
 async function fetchPost(id) {
   const res = await fetch(`${import.meta.env.VITE_API}/posts/${id}`);
@@ -44,6 +45,7 @@ export default function Post() {
       {post.comments?.map((comment) => (
         <Comment key={comment.id} comment={comment} />
       ))}
+      <CommentForm postId={id} />
     </Container>
   );
 }

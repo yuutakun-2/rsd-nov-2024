@@ -1,19 +1,34 @@
-import {
-  Box,
-  Card,
-  CardContent,
-  IconButton,
-  Typography,
-  Avatar,
-  Stack,
-  Container,
-} from "@mui/material";
+import { Box, Card, IconButton, Typography, Avatar } from "@mui/material";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import { useApp } from "../AppProvider";
 import { blue } from "@mui/material/colors";
+import { useMutation } from "react-query";
+import { useQueryClient } from "react-query";
+
+async function deleteComment(commentId) {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${import.meta.env.VITE_API}/comments/${commentId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error("Failed to delete comment");
+
+  return res.json();
+}
 
 export default function Comment({ comment }) {
   const { auth } = useApp();
+  const queryClient = useQueryClient();
+
+  const remove = useMutation(deleteComment, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["post", id]);
+    },
+  });
+
   return (
     <Box>
       <Card
@@ -36,13 +51,11 @@ export default function Comment({ comment }) {
             </Typography>
           </Box>
           {/* Test this later */}
-          {auth &&
-            auth.id ===
-              comment.userId(
-                <IconButton>
-                  <DeleteIcon />
-                </IconButton>
-              )}
+          {auth && auth.id === comment.userId && (
+            <IconButton onClick={() => remove.mutate(comment.id)}>
+              <DeleteIcon />
+            </IconButton>
+          )}
         </Box>
         <Typography>{comment.content}</Typography>
       </Card>
