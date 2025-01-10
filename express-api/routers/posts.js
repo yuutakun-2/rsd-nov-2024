@@ -74,6 +74,10 @@ router.delete("/posts/:id", auth, isOwner("posts"), async (req, res) => {
   const { id } = req.params;
   const post = await prisma.post.delete({
     where: { id: Number(id) },
+    include: {
+      comments: true,
+      likes: true,
+    },
   });
 
   res.json(post);

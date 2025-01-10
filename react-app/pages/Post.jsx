@@ -18,7 +18,7 @@ export default function Post() {
     data: post,
     isLoading,
     error,
-  } = useQuery(["post", id], () => fetchPost(id));
+  } = useQuery(["post", Number(id)], () => fetchPost(id));
 
   if (isLoading) {
     return (
@@ -45,7 +45,7 @@ export default function Post() {
       {post.comments?.map((comment) => (
         <Comment key={comment.id} comment={comment} />
       ))}
-      <CommentForm postId={id} />
+      <CommentForm postId={Number(id)} />
     </Container>
   );
 }

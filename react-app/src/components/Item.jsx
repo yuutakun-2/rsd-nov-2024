@@ -90,9 +90,23 @@ export default function Item({ post, remove }) {
             alignItems: "flex-start",
           }}
         >
-          <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-            <Avatar sx={{ width: 32, height: 32, background: blue[500] }} />
-            <Typography sx={{ fontWeight: "bold" }}>
+          <Box sx={{ display: "flex", gap: 1, mb: 2, alignItems: "center" }}>
+            <IconButton
+              sx={{ display: "flex", gap: 2 }}
+              onClick={() => navigate(`/users/${post.user.id}`)}
+            >
+              <Avatar sx={{ width: 32, height: 32, background: blue[500] }} />
+            </IconButton>
+            <Typography
+              sx={{
+                fontWeight: "bold",
+                cursor: "pointer",
+                "&:hover": {
+                  cursor: "pointer",
+                },
+              }}
+              onClick={() => navigate(`/users/${post.user.id}`)}
+            >
               {post.user.name}
             </Typography>
           </Box>

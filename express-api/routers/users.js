@@ -34,6 +34,35 @@ router.post("/users", async (req, res) => {
   }
 });
 
+router.get("/users/:id", async (req, res) => {
+  const { id } = req.params;
+  const user = await prisma.user.findUnique({
+    where: {
+      id: Number(id),
+    },
+    include: {
+      posts: {
+        include: {
+          user: true,
+        },
+      },
+      follows: true,
+      followers: true,
+    },
+  });
+
+  if (!user) {
+    res.status(404).json({ msg: "User not found." });
+  }
+  // const followCount = {
+  //   ...user,
+  //   follwersCount: user.followers.length,
+  //   followingCount: user.following.length,
+  // };
+
+  res.status(200).json(user);
+});
+
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
@@ -56,6 +85,23 @@ router.post("/login", async (req, res) => {
   } catch {
     res.status(401).json({ msg: "Invalid user." });
   }
+});
+
+router.post("/users/:id/follow", auth, async (req, res) => {
+  const { id } = req.params;
+  const authUser = res.locals.user.id;
+
+  if (Number(id) === Number(authUser))
+    return res.status(400).json({ msg: "Cannot follow yourself." });
+
+  const user = await prisma.follow.create({
+    data: {
+      followerId: Number(authUser),
+      followingId: Number(id),
+    },
+  });
+
+  res.status(201).json({ msg: "User followed." });
 });
 
 router.get("/verify", auth, async (req, res) => {

@@ -25,7 +25,7 @@ export default function Comment({ comment }) {
 
   const remove = useMutation(deleteComment, {
     onSuccess: () => {
-      queryClient.invalidateQueries(["post", id]);
+      queryClient.invalidateQueries(["post", Number(comment.postId)]);
     },
   });
 
