@@ -20,8 +20,8 @@ model User {
   posts Post[]
   likes Like[]
   comments Comment[]
-  follows Follow[] @relation("following")
-  followers Follow[] @relation("follower")
+  follows Follow[] @relation("follower")
+  followers Follow[] @relation("following")
   created DateTime @default(now())
 }
 

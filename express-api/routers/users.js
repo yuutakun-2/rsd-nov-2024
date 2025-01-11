@@ -117,12 +117,15 @@ router.post("/users/:id/follow", auth, async (req, res) => {
         followerId: Number(authUser),
         followingId: Number(id),
       },
+      include: {
+        following: true,
+        follower: true,
+      },
     });
-    res.status(201).json;
+    res.status(201).json(follow);
   } catch (err) {
     return res.json(err.message);
   }
-  res.status(201).json(follow);
 });
 
 router.delete("/users/:id/unfollow", auth, async (req, res) => {
@@ -133,10 +136,9 @@ router.delete("/users/:id/unfollow", auth, async (req, res) => {
     return res.status(400).json({ msg: "Cannot unfollow yourself." });
 
   try {
-    const unfollow = await prisma.follow.delete({
+    const unfollow = await prisma.follow.deleteMany({
       where: {
-        followerId: Number(authUser),
-        followingId: Number(id),
+        AND: [{ followerId: Number(authUser) }, { followingId: Number(id) }],
       },
     });
 

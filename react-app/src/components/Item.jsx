@@ -60,12 +60,14 @@ export default function Item({ post, remove }) {
   const like = useMutation(likePost, {
     onSuccess: () => {
       queryClient.invalidateQueries("posts");
+      queryClient.invalidateQueries("user");
     },
   });
 
   const unlike = useMutation(unlikePost, {
     onSuccess: () => {
       queryClient.invalidateQueries("posts");
+      queryClient.invalidateQueries("user");
     },
   });
 

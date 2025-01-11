@@ -1,8 +1,11 @@
-import { Container, Avatar, Box, Typography } from "@mui/material";
+import { Container, Avatar, Box, Typography, Button } from "@mui/material";
 
 import Item from "../components/Item";
+import FollowButton from "../components/FollowButton";
+
 import { useQuery } from "react-query";
 import { useParams } from "react-router";
+import { useApp } from "../AppProvider";
 
 async function fetchUser(id) {
   const res = await fetch(`${import.meta.env.VITE_API}/users/${id}`);
@@ -28,7 +31,7 @@ export default function Profile() {
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Container
         maxWidth="sm"
         sx={{
@@ -55,6 +58,7 @@ export default function Profile() {
           Following: {user.follows?.length || 0}
         </Typography>
       </Container>
+      <FollowButton user={user} />
       <Box>
         {user.posts?.map((post) => (
           <Item key={post.id} post={post} />
