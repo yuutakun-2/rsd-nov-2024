@@ -42,12 +42,29 @@ router.get("/users/:id", async (req, res) => {
     },
     include: {
       posts: {
+        orderBy: { id: "desc" },
         include: {
           user: true,
+          likes: true,
+          comments: true,
+          // _count: {
+          //   select: {
+          //     likes: true,
+          //     comments: true,
+          //   },
+          // },
         },
       },
-      follows: true,
-      followers: true,
+      follows: {
+        include: {
+          following: true,
+        },
+      },
+      followers: {
+        include: {
+          follower: true,
+        },
+      },
     },
   });
 
@@ -94,14 +111,39 @@ router.post("/users/:id/follow", auth, async (req, res) => {
   if (Number(id) === Number(authUser))
     return res.status(400).json({ msg: "Cannot follow yourself." });
 
-  const user = await prisma.follow.create({
-    data: {
-      followerId: Number(authUser),
-      followingId: Number(id),
-    },
-  });
+  try {
+    const follow = await prisma.follow.create({
+      data: {
+        followerId: Number(authUser),
+        followingId: Number(id),
+      },
+    });
+    res.status(201).json;
+  } catch (err) {
+    return res.json(err.message);
+  }
+  res.status(201).json(follow);
+});
 
-  res.status(201).json({ msg: "User followed." });
+router.delete("/users/:id/unfollow", auth, async (req, res) => {
+  const { id } = req.params;
+  const authUser = res.locals.user.id;
+
+  if (Number(id) === Number(authUser))
+    return res.status(400).json({ msg: "Cannot unfollow yourself." });
+
+  try {
+    const unfollow = await prisma.follow.delete({
+      where: {
+        followerId: Number(authUser),
+        followingId: Number(id),
+      },
+    });
+
+    res.json(unfollow);
+  } catch (err) {
+    return res.json(err.message);
+  }
 });
 
 router.get("/verify", auth, async (req, res) => {
