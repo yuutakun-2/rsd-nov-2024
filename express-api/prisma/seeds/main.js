@@ -7,7 +7,7 @@ const bcrypt = require("bcrypt");
 async function main() {
 	console.log("user seeding started...");
     for(let i=0; i<5; i++) {
-        const hash = await bcrypt.hash("password", 10);
+        const hash = await bcrypt.hash("123456", 10);
         const firstName = faker.person.firstName();
         const lastName = faker.person.lastName();
 

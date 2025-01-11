@@ -29,7 +29,6 @@ const unfollowUser = async (userId) => {
 };
 
 export default function FollowButton({ userId, isFollowing }) {
-    const { auth } = useApp();
     const queryClient = useQueryClient();
 
     const { mutate: follow, isLoading: isFollowLoading } = useMutation(
@@ -50,13 +49,11 @@ export default function FollowButton({ userId, isFollowing }) {
         }
     );
 
-    if (!auth || auth.id === userId) return null;
-
     const isLoading = isFollowLoading || isUnfollowLoading;
 
     return (
         <Button
-            variant={isFollowing ? "outlined" : "contained"}
+            variant="contained"
             onClick={() => {
                 if (isFollowing) {
                     unfollow(userId);
@@ -66,7 +63,7 @@ export default function FollowButton({ userId, isFollowing }) {
             }}
             disabled={isLoading}
         >
-            {isFollowing ? "Unfollow" : "Follow"}
+            {isLoading ? "Loading..." : (isFollowing ? "Following" : "Follow")}
         </Button>
     );
 }

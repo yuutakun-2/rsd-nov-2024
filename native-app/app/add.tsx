@@ -1,114 +1,145 @@
-import React from "react";
-import { View, TextInput, Button, StyleSheet } from "react-native";
+import { View, StyleSheet, Pressable, TextInput } from 'react-native';
+import { useForm, Controller } from 'react-hook-form';
+import { useMutation, useQueryClient } from 'react-query';
+import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@react-navigation/native';
+import Text from '../components/Text';
+import { useAuth } from '../context/auth';
 
-import { router } from "expo-router";
-import { useForm, Controller } from "react-hook-form";
-import { useMutation, useQueryClient } from "react-query";
+type PostForm = {
+  content: string;
+};
 
-import type { ItemType } from "@/types/ItemType";
-import { useTheme } from "@react-navigation/native";
+const createPost = async (data: PostForm, token: string) => {
+  const response = await fetch('http://localhost:8080/posts', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(data),
+  });
 
-const styles = StyleSheet.create({
-	container: {
-		padding: 20,
-	},
-	input: {
-		height: 100,
-		borderColor: "#ccc",
-		borderWidth: 1,
-		borderRadius: 5,
-		marginBottom: 10,
-		padding: 10,
-		fontSize: 18,
-	},
-	button: {
-		backgroundColor: "blue",
-		padding: 10,
-		alignItems: "center",
-	},
-	buttonText: {
-		color: "white",
-	},
-});
+  if (!response.ok) {
+    throw new Error('Failed to create post');
+  }
 
-const postContent = async (content: string) => {
-	const res = await fetch("http://localhost:8080/posts", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({ content }),
-	});
-
-	if (!res.ok) {
-		throw new Error("Network res was not ok");
-	}
-
-	return res.json();
+  return response.json();
 };
 
 export default function Add() {
-	const {
-		control,
-		handleSubmit,
-		formState: { errors },
-	} = useForm<{ content: string }>();
+  const { token } = useAuth();
+  const { colors } = useTheme();
+  const queryClient = useQueryClient();
+  const { control, handleSubmit, formState: { errors } } = useForm<PostForm>();
 
-	const queryClient = useQueryClient();
+  const postMutation = useMutation(
+    (data: PostForm) => createPost(data, token!),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('posts');
+        router.back();
+      },
+    }
+  );
 
-	const { colors } = useTheme();
+  const onSubmit = (data: PostForm) => {
+    postMutation.mutate(data);
+  };
 
-	const onSubmit = (data: { content: string }) => {
-		add.mutate(data.content);
-		router.push("../");
-	};
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>New Post</Text>
+        <Pressable onPress={() => router.back()} style={styles.closeButton}>
+          <Ionicons name="close" size={24} color={colors.text} />
+        </Pressable>
+      </View>
 
-	const add = useMutation(postContent, {
-		onSuccess: async item => {
-			await queryClient.cancelQueries("posts");
-			await queryClient.setQueryData<ItemType[] | undefined>(
-				"posts",
-				old => {
-					return old ? [item, ...old] : [item];
-				}
-			);
-		},
-		onError: error => {
-			console.error("Error posting content:", error);
-		},
-	});
+      <Controller
+        control={control}
+        rules={{
+          required: 'Post content is required',
+          maxLength: {
+            value: 280,
+            message: 'Post must be less than 280 characters',
+          },
+        }}
+        name="content"
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={[
+              styles.input, 
+              styles.contentInput, 
+              { color: colors.text, borderColor: colors.border }
+            ]}
+            onChangeText={onChange}
+            value={value}
+            placeholder="What's on your mind?"
+            placeholderTextColor={colors.text + '80'}
+            multiline
+            numberOfLines={4}
+            maxLength={280}
+          />
+        )}
+      />
+      {errors.content && <Text style={styles.errorText}>{errors.content.message}</Text>}
 
-	return (
-		<View style={styles.container}>
-			<Controller
-				control={control}
-				rules={{
-					required: true,
-				}}
-				render={({ field: { onChange, onBlur, value } }) => (
-					<TextInput
-						style={[
-							styles.input,
-							{ color: colors.text, borderColor: colors.border },
-							errors.content && {
-								borderColor: "red",
-							},
-						]}
-						onBlur={onBlur}
-						onChangeText={onChange}
-						value={value}
-						placeholder="Enter content"
-						multiline
-					/>
-				)}
-				name="content"
-				defaultValue=""
-			/>
-
-			<Button
-				title="Submit"
-				onPress={handleSubmit(onSubmit)}
-			/>
-		</View>
-	);
+      <Pressable 
+        style={styles.button} 
+        onPress={handleSubmit(onSubmit)}
+        disabled={postMutation.isLoading}
+      >
+        <Text style={styles.buttonText}>
+          {postMutation.isLoading ? 'Posting...' : 'Post'}
+        </Text>
+      </Pressable>
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    padding: 8,
+  },
+  input: {
+    borderWidth: 1,
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  contentInput: {
+    height: 120,
+    textAlignVertical: 'top',
+  },
+  errorText: {
+    color: '#FF3B30',
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});

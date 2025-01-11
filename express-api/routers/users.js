@@ -8,6 +8,8 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const { auth } = require("../middlewares/auth");
+const { optionalAuth } = require("../middlewares/optionalAuth");
+const { wsService } = require("../services/websocket");
 
 // Get latest notifications for auth user
 router.get("/notifications", auth, async (req, res) => {
@@ -128,7 +130,7 @@ router.get("/verify", auth, async (req, res) => {
     });
 });
 
-router.get("/users/:id", auth, async (req, res) => {
+router.get("/users/:id", optionalAuth, async (req, res) => {
     const userId = parseInt(req.params.id);
     try {
         const user = await prisma.user.findUnique({
@@ -153,32 +155,35 @@ router.get("/users/:id", auth, async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Check if the current user is following this user
-        const isFollowing = await prisma.follow.findFirst({
-            where: {
-                followerId: req.user.id,
-                followingId: userId
-            }
-        });
+        // Check if the current user is following this user (if authenticated)
+        let isFollowing = false;
+        if (req.user) {
+            const followRecord = await prisma.follow.findFirst({
+                where: {
+                    followerId: req.user.id,
+                    followingId: userId
+                }
+            });
+            isFollowing = !!followRecord;
+        }
 
         const { password, followers, follows, ...userWithoutPassword } = user;
         res.json({
             ...userWithoutPassword,
-            isFollowing: !!isFollowing,
+            isFollowing,
             followerCount: followers.length,
             followingCount: follows.length,
             followers,
-            following: follows
+            follows
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error fetching user:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
 router.get("/search", async (req, res) => {
     const { q } = req.query;
-    
     if (!q) {
         return res.status(400).json({ error: "Search query is required" });
     }
@@ -191,10 +196,28 @@ router.get("/search", async (req, res) => {
                     { username: { contains: q } }
                 ]
             },
+            include: {
+                _count: {
+                    select: {
+                        followers: true,
+                        follows: true
+                    }
+                }
+            },
             take: 10
         });
 
-        res.json(users);
+        // Remove sensitive data and add counts
+        const sanitizedUsers = users.map(user => {
+            const { password, _count, ...rest } = user;
+            return {
+                ...rest,
+                followersCount: _count.followers,
+                followingCount: _count.follows
+            };
+        });
+
+        res.json(sanitizedUsers);
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ error: error.message });
@@ -299,12 +322,21 @@ router.post("/users/:id/follow", auth, async (req, res) => {
         });
 
         // Create notification for the user being followed
-        await prisma.notification.create({
+        const notification = await prisma.notification.create({
             data: {
-                type: 'follow',
+                type: 'FOLLOW',
                 userId: followingId,
                 actorId: followerId
+            },
+            include: {
+                actor: true
             }
+        });
+
+        // Send real-time notification
+        wsService.sendToUser(followingId, {
+            type: 'notification',
+            data: notification
         });
 
         res.json({ success: true });

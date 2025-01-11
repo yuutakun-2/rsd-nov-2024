@@ -17,8 +17,12 @@ import { useApp } from "../AppProvider";
 
 const API = "http://localhost:8080";
 
-const fetchUser = async id => {
-	const res = await fetch(`${API}/users/${id}`);
+const fetchUser = async (id, token) => {
+	const res = await fetch(`${API}/users/${id}`, {
+        headers: {
+            Authorization: token ? `Bearer ${token}` : '',
+        },
+    });
 	if (!res.ok) throw new Error("Failed to fetch user");
 	return res.json();
 };
@@ -32,7 +36,13 @@ export default function Profile() {
 		data: user,
 		isLoading,
 		error,
-	} = useQuery(["user", id], () => fetchUser(id));
+	} = useQuery(
+        ["user", id], 
+        () => fetchUser(id, auth?.token),
+        {
+            enabled: !!id,
+        }
+    );
 
     const handleOpenDialog = (type) => {
         setDialogType(type);
@@ -84,6 +94,12 @@ export default function Profile() {
 					</Typography>
 				)}
                 
+                {auth && auth.id !== user.id && (
+                    <Box sx={{ mb: 2 }}>
+                        <FollowButton userId={user.id} isFollowing={user.isFollowing} />
+                    </Box>
+                )}
+                
                 <Box sx={{ display: 'flex', gap: 4, mb: 2 }}>
                     <Button 
                         variant="text" 
@@ -104,11 +120,6 @@ export default function Profile() {
                         </Typography>
                     </Button>
                 </Box>
-
-                <FollowButton 
-                    userId={user.id} 
-                    isFollowing={user.followers?.some(f => f.followerId === auth?.id)}
-                />
 			</Box>
 
 			<Box sx={{ mt: 2 }}>
@@ -117,13 +128,14 @@ export default function Profile() {
 				))}
 			</Box>
 
-            <UserListDialog 
-                open={!!dialogType}
-                onClose={handleCloseDialog}
-                id={user.id}
-                type={dialogType}
-                title={dialogType === 'followers' ? 'Followers' : 'Following'}
-            />
+            {dialogType && (
+                <UserListDialog
+                    open={!!dialogType}
+                    onClose={handleCloseDialog}
+                    userId={user.id}
+                    type={dialogType}
+                />
+            )}
 		</Container>
 	);
 }

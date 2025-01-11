@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { useApp } from "../AppProvider";
 
 import {
@@ -36,12 +35,21 @@ async function fetchNotifications() {
 }
 
 export default function Header() {
-    const { auth, showForm, setShowForm, mode, setMode, setShowDrawer } = useApp();
+    const { 
+        auth, 
+        showForm, 
+        setShowForm, 
+        mode, 
+        setMode, 
+        setShowDrawer,
+        notifications: realtimeNotifications 
+    } = useApp();
     const { pathname } = useLocation();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
     // Fetch notifications and calculate unread count
-    const { data: notifications = [] } = useQuery(
+    const { data: fetchedNotifications = [] } = useQuery(
         "notifications",
         fetchNotifications,
         {
@@ -50,7 +58,18 @@ export default function Header() {
         }
     );
 
-    const unreadCount = notifications.filter((n) => !n.read).length;
+    // Combine fetched and realtime notifications, removing duplicates
+    const allNotifications = [...realtimeNotifications, ...fetchedNotifications]
+        .reduce((unique, notification) => {
+            const exists = unique.find(n => n.id === notification.id);
+            if (!exists) {
+                unique.push(notification);
+            }
+            return unique;
+        }, [])
+        .sort((a, b) => new Date(b.created) - new Date(a.created));
+
+    const unreadCount = allNotifications.filter((n) => !n.read).length;
 
     return (
         <AppBar position="static">
@@ -99,33 +118,18 @@ export default function Header() {
                             <Badge 
                                 badgeContent={unreadCount} 
                                 color="error"
-                                sx={{
-                                    "& .MuiBadge-badge": {
-                                        right: -3,
-                                        top: 3,
-                                    },
-                                }}
                             >
                                 <NotificationsIcon />
                             </Badge>
                         </IconButton>
                     )}
 
-                    {mode === "dark" ? (
-                        <IconButton
-                            color="inherit"
-                            onClick={() => setMode("light")}
-                        >
-                            <LightModeIcon />
-                        </IconButton>
-                    ) : (
-                        <IconButton
-                            color="inherit"
-                            onClick={() => setMode("dark")}
-                        >
-                            <DarkModeIcon />
-                        </IconButton>
-                    )}
+                    <IconButton
+                        color="inherit"
+                        onClick={() => setMode(mode === "dark" ? "light" : "dark")}
+                    >
+                        {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+                    </IconButton>
                 </Box>
             </Toolbar>
         </AppBar>

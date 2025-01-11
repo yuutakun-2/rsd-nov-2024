@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useMemo, useEffect } from "react";
 import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
 import { QueryClientProvider, QueryClient } from "react-query";
 import AppRouter from "./AppRouter";
+import { wsService } from "./services/websocket";
 
 const AppContext = createContext();
 const queryClient = new QueryClient();
@@ -16,6 +17,30 @@ export default function AppProvider() {
 	const [showDrawer, setShowDrawer] = useState(false);
 	const [mode, setMode] = useState("dark");
 	const [auth, setAuth] = useState(null);
+    const [notifications, setNotifications] = useState([]);
+
+    // Handle WebSocket notifications
+    useEffect(() => {
+        if (auth) {
+            const token = localStorage.getItem("token");
+            if (token) {
+                wsService.connect(token);
+                
+                // Add notification listener
+                const unsubscribe = wsService.addListener((notification) => {
+                    setNotifications(prev => [notification, ...prev]);
+                    // You can also use queryClient.invalidateQueries() here to refresh notifications list
+                });
+
+                return () => {
+                    unsubscribe();
+                    wsService.disconnect();
+                };
+            }
+        } else {
+            wsService.disconnect();
+        }
+    }, [auth]);
 
     // Verify user session on app load
     useEffect(() => {
@@ -72,6 +97,8 @@ export default function AppProvider() {
 				setMode,
 				auth,
 				setAuth,
+                notifications,
+                setNotifications,
 			}}>
 			<ThemeProvider theme={theme}>
 				<CssBaseline />

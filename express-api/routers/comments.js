@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 
 const { auth } = require("../middlewares/auth");
 const { isCommentOwner } = require("../middlewares/ownership");
+const { wsService } = require("../services/websocket");
 
 router.post("/posts/:id/comments", auth, async (req, res) => {
 	const postId = req.params.id;
@@ -36,14 +37,24 @@ router.post("/posts/:id/comments", auth, async (req, res) => {
 
         // Create notification if the comment is not from post owner
         if (post.userId !== userId) {
-            await prisma.notification.create({
+            const notification = await prisma.notification.create({
                 data: {
                     type: "COMMENT",
                     userId: post.userId,
                     actorId: userId,
                     postId: parseInt(postId),
                     read: false,
+                },
+                include: {
+                    actor: true,
+                    post: true
                 }
+            });
+
+            // Send real-time notification
+            wsService.sendToUser(post.userId, {
+                type: 'notification',
+                data: notification
             });
         }
 

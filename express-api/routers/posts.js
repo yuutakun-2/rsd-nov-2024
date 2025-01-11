@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 
 const { auth } = require("../middlewares/auth");
 const { isPostOwner } = require("../middlewares/ownership");
+const { wsService } = require("../services/websocket");
 
 router.get('/posts', async (req, res) => {
     const posts = await prisma.post.findMany({
@@ -142,14 +143,24 @@ router.post('/posts/:id/like', auth, async (req, res) => {
 
         // Create notification if the like is not from post owner
         if (post.userId !== userId) {
-            await prisma.notification.create({
+            const notification = await prisma.notification.create({
                 data: {
                     type: "LIKE",
                     userId: post.userId,
                     actorId: userId,
                     postId: Number(id),
                     read: false,
+                },
+                include: {
+                    actor: true,
+                    post: true
                 }
+            });
+
+            // Send real-time notification
+            wsService.sendToUser(post.userId, {
+                type: 'notification',
+                data: notification
             });
         }
 
