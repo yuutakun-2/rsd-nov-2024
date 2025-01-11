@@ -28,12 +28,12 @@ const fetchUsers = async (id, type) => {
     return res.json();
 };
 
-export default function UserListDialog({ open, onClose, id, type, title }) {
+export default function UserListDialog({ open, onClose, userId, type, title }) {
     const navigate = useNavigate();
 
     const { data: users, isLoading, error } = useQuery(
-        ["users", id, type],
-        () => fetchUsers(id, type),
+        ["users", userId, type],
+        () => fetchUsers(userId, type),
         {
             enabled: open
         }

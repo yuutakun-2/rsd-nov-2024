@@ -74,6 +74,7 @@ export default function Item({ post, navigateOnDelete = false }) {
 		onSuccess: () => {
 			queryClient.invalidateQueries("posts");
 			queryClient.invalidateQueries("user");
+			queryClient.invalidateQueries(["post", post.id.toString()]);
 		},
 	});
 
@@ -81,6 +82,7 @@ export default function Item({ post, navigateOnDelete = false }) {
 		onSuccess: () => {
 			queryClient.invalidateQueries("posts");
 			queryClient.invalidateQueries("user");
+			queryClient.invalidateQueries(["post", post.id.toString()]);
 		},
 	});
 

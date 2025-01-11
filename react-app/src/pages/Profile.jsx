@@ -134,6 +134,7 @@ export default function Profile() {
                     onClose={handleCloseDialog}
                     userId={user.id}
                     type={dialogType}
+                    title={dialogType === 'followers' ? 'Followers' : 'Following'}
                 />
             )}
 		</Container>
