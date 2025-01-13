@@ -1,39 +1,37 @@
-import { 
-    Dialog, 
-    DialogTitle, 
-    List, 
-    ListItem, 
-    ListItemAvatar, 
-    ListItemText, 
+import {
+    Dialog,
+    DialogTitle,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    ListItemAvatar,
     Avatar,
+    Box,
     CircularProgress,
-    Typography,
-    Box
 } from "@mui/material";
 import { blue } from "@mui/material/colors";
 import { useNavigate } from "react-router";
 import { useQuery } from "react-query";
+import { fetchWithAuth } from "../utils/api";
 
 const API = "http://localhost:8080";
 
-const fetchUsers = async (id, type) => {
-    let endpoint;
+const getEndpoint = (id, type) => {
     if (type === 'followers' || type === 'following') {
-        endpoint = `/users/${id}/${type}`;
+        return `/users/${id}/${type}`;
     } else if (type === 'likes') {
-        endpoint = `/posts/${id}/likes`;
+        return `/posts/${id}/likes`;
     }
-    const res = await fetch(`${API}${endpoint}`);
-    if (!res.ok) throw new Error(`Failed to fetch ${type}`);
-    return res.json();
+    throw new Error('Invalid type');
 };
 
 export default function UserListDialog({ open, onClose, userId, type, title }) {
     const navigate = useNavigate();
 
-    const { data: users, isLoading, error } = useQuery(
+    const { data: users = [], isLoading, error } = useQuery(
         ["users", userId, type],
-        () => fetchUsers(userId, type),
+        () => fetchWithAuth(getEndpoint(userId, type)),
         {
             enabled: open
         }
@@ -53,27 +51,24 @@ export default function UserListDialog({ open, onClose, userId, type, title }) {
                 </Box>
             ) : error ? (
                 <Box sx={{ p: 3 }}>
-                    <Typography color="error">
-                        Error loading users: {error.message}
-                    </Typography>
+                    <ListItemText primary={error.message} sx={{ color: "error.main" }} />
+                </Box>
+            ) : !users.length ? (
+                <Box sx={{ p: 3 }}>
+                    <ListItemText primary="No users found" />
                 </Box>
             ) : (
                 <List sx={{ pt: 0 }}>
-                    {users?.map((user) => (
-                        <ListItem 
-                            button 
-                            onClick={() => handleUserClick(user.id)} 
-                            key={user.id}
-                        >
-                            <ListItemAvatar>
-                                <Avatar sx={{ bgcolor: blue[500] }}>
-                                    {user.name[0]}
-                                </Avatar>
-                            </ListItemAvatar>
-                            <ListItemText 
-                                primary={user.name} 
-                                secondary={`@${user.username}`}
-                            />
+                    {users.map((user) => (
+                        <ListItem disablePadding key={user.id}>
+                            <ListItemButton onClick={() => handleUserClick(user.id)}>
+                                <ListItemAvatar>
+                                    <Avatar sx={{ bgcolor: blue[500] }}>
+                                        {user.name[0]}
+                                    </Avatar>
+                                </ListItemAvatar>
+                                <ListItemText primary={user.name} />
+                            </ListItemButton>
                         </ListItem>
                     ))}
                 </List>

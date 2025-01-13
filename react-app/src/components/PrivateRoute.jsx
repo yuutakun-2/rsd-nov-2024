@@ -5,7 +5,7 @@ export default function PrivateRoute({ children }) {
     const { auth } = useApp();
 
     if (!auth) {
-        return <Navigate to="/login" />;
+        return <Navigate to="/login" replace />;
     }
 
     return children;

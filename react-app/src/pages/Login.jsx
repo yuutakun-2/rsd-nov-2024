@@ -1,96 +1,102 @@
-import { Box, Typography, OutlinedInput, Button, Alert } from "@mui/material";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import {
+    Container,
+    Box,
+    TextField,
+    Button,
+    Typography,
+    Alert,
+    useTheme,
+} from "@mui/material";
 import { useApp } from "../AppProvider";
-import { useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
-import { useMutation } from "react-query";
-
-async function postLogin(data) {
-	const res = await fetch("http://localhost:8080/login", {
-		method: "POST",
-		body: JSON.stringify(data),
-		headers: {
-			"Content-Type": "application/json",
-		},
-	});
-
-	if (!res.ok) {
-		const error = await res.json();
-		throw new Error(error.msg || "Login failed");
-	}
-
-	return res.json();
-}
+import { fetchWithAuth } from "../utils/api";
 
 export default function Login() {
-	const { setAuth } = useApp();
-	const navigate = useNavigate();
+    const navigate = useNavigate();
+    const { login } = useApp();
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const theme = useTheme();
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = useForm();
+    const onSubmit = async (e) => {
+        e.preventDefault();
+        setError(null);
+        setLoading(true);
 
-	const login = useMutation(postLogin, {
-		onSuccess: ({ user, token }) => {
-			// First store the token
-			localStorage.setItem("token", token);
-			// Then set the auth state
-			setAuth(user);
-			// Finally navigate
-			navigate("/");
-		},
-		onError: (error) => {
-			console.error("Login failed:", error);
-		}
-	});
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
 
-	const submitLogin = data => {
-		login.mutate(data);
-	};
+        try {
+            const response = await fetchWithAuth("/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
 
-	return (
-		<Box>
-			<Typography variant="h3">Login</Typography>
+            const { user, token } = response;
+            login(user, token);
+            navigate("/");
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-			{login.isError && (
-				<Alert
-					severity="warning"
-					sx={{ mt: 2 }}>
-					Invalid username or password
-				</Alert>
-			)}
+    return (
+        <Container maxWidth="sm">
+            <Box sx={{ mt: 4 }}>
+                <Typography variant="h4" gutterBottom>
+                    Login
+                </Typography>
 
-			<form onSubmit={handleSubmit(submitLogin)}>
-				<OutlinedInput
-					{...register("username", { required: true })}
-					fullWidth
-					placeholder="username"
-					sx={{ mt: 2 }}
-				/>
-				{errors.username && (
-					<Typography color="error">username is required</Typography>
-				)}
+                {error && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        {error}
+                    </Alert>
+                )}
 
-				<OutlinedInput
-					{...register("password", { required: true })}
-					fullWidth
-					type="password"
-					placeholder="password"
-					sx={{ mt: 2 }}
-				/>
-				{errors.password && (
-					<Typography color="error">password is required</Typography>
-				)}
+                <form onSubmit={onSubmit}>
+                    <TextField
+                        fullWidth
+                        label="Username"
+                        name="username"
+                        required
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Password"
+                        name="password"
+                        type="password"
+                        required
+                        sx={{ mb: 2 }}
+                    />
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        type="submit"
+                        disabled={loading}
+                        sx={{ mb: 2 }}>
+                        {loading ? "Loading..." : "Login"}
+                    </Button>
+                </form>
 
-				<Button
-					sx={{ mt: 2 }}
-					type="submit"
-					fullWidth
-					variant="contained">
-					Login
-				</Button>
-			</form>
-		</Box>
-	);
+                <Typography align="center">
+                    Don't have an account?{" "}
+                    <Link
+                        to="/register"
+                        style={{ 
+                            textDecoration: "none", 
+                            color: theme.palette.primary.main 
+                        }}>
+                        Register
+                    </Link>
+                </Typography>
+            </Box>
+        </Container>
+    );
 }

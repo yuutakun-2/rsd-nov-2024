@@ -1,94 +1,111 @@
-import { Box, Typography, OutlinedInput, Button } from "@mui/material";
-import { useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
-import { useMutation } from "react-query";
-
-async function postUser(data) {
-    const res = await fetch("http://localhost:8080/users", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    });
-
-    if (!res.ok) {
-        throw new Error("Network response was not ok");
-    }
-
-    return res.json();
-}
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import {
+    Container,
+    Box,
+    TextField,
+    Button,
+    Typography,
+    Alert,
+    useTheme,
+} from "@mui/material";
+import { fetchWithAuth } from "../utils/api";
 
 export default function Register() {
-	const navigate = useNavigate();
+    const navigate = useNavigate();
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const theme = useTheme();
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = useForm();
+    const onSubmit = async (e) => {
+        e.preventDefault();
+        setError(null);
+        setLoading(true);
 
-    const create = useMutation(postUser, {
-        onSuccess: () => {
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
+
+        try {
+            await fetchWithAuth("/users", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+
             navigate("/login");
-        },
-    });
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-	const submitRegister = data => {
-        create.mutate(data);
-	};
+    return (
+        <Container maxWidth="sm">
+            <Box sx={{ mt: 4 }}>
+                <Typography variant="h4" gutterBottom>
+                    Register
+                </Typography>
 
-	return (
-		<Box>
-			<Typography variant="h3">Register</Typography>
+                {error && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        {error}
+                    </Alert>
+                )}
 
-			<form onSubmit={handleSubmit(submitRegister)}>
-				<OutlinedInput
-					{...register("name", { required: true })}
-					fullWidth
-					placeholder="name"
-					sx={{ mt: 2 }}
-				/>
-				{errors.name && (
-					<Typography color="error">name is required</Typography>
-				)}
+                <form onSubmit={onSubmit}>
+                    <TextField
+                        fullWidth
+                        label="Name"
+                        name="name"
+                        required
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Username"
+                        name="username"
+                        required
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Bio"
+                        name="bio"
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Password"
+                        name="password"
+                        type="password"
+                        required
+                        sx={{ mb: 2 }}
+                    />
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        type="submit"
+                        disabled={loading}
+                        sx={{ mb: 2 }}>
+                        {loading ? "Loading..." : "Register"}
+                    </Button>
+                </form>
 
-				<OutlinedInput
-					{...register("username", { required: true })}
-					fullWidth
-					placeholder="username"
-					sx={{ mt: 2 }}
-				/>
-				{errors.username && (
-					<Typography color="error">username is required</Typography>
-				)}
-
-				<OutlinedInput
-					{...register("bio")}
-					fullWidth
-					placeholder="bio"
-					sx={{ mt: 2 }}
-				/>
-
-				<OutlinedInput
-					{...register("password", { required: true })}
-					fullWidth
-					type="password"
-					placeholder="password"
-					sx={{ mt: 2 }}
-				/>
-				{errors.password && (
-					<Typography color="error">password is required</Typography>
-				)}
-
-				<Button
-					sx={{ mt: 2 }}
-					type="submit"
-					fullWidth
-					variant="contained">
-					Register
-				</Button>
-			</form>
-		</Box>
-	);
+                <Typography align="center">
+                    Already have an account?{" "}
+                    <Link
+                        to="/login"
+                        style={{ 
+                            textDecoration: "none", 
+                            color: theme.palette.primary.main 
+                        }}>
+                        Login
+                    </Link>
+                </Typography>
+            </Box>
+        </Container>
+    );
 }

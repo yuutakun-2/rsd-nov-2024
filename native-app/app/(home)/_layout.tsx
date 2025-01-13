@@ -38,12 +38,12 @@ function NotificationIcon({ color, unreadCount }: { color: string; unreadCount?:
 
 export default function Home() {
     const { colors } = useTheme();
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const { data: unreadCount = 0 } = useQuery(
         ["notifications", "unread"],
         () => fetchUnreadCount(token!),
         {
-            enabled: !!token,
+            enabled: !!token && !!user,
         }
     );
 
@@ -83,7 +83,7 @@ export default function Home() {
                 options={{
                     title: "Notifications",
                     tabBarIcon: ({ color }) => (
-                        <NotificationIcon color={color} unreadCount={unreadCount} />
+                        <NotificationIcon color={color} unreadCount={user ? unreadCount : undefined} />
                     ),
                 }}
             />

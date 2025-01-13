@@ -31,6 +31,7 @@ export default async function Home() {
                 {popular.map(movie => {
                     return (
 						<div
+                            key={movie.id}
 							id={movie.id}
 							className="w-[185px] flex flex-col mb-4 items-center">
 							<Link href={`/detail/${movie.id}`}>

@@ -1,11 +1,11 @@
 import { Button } from "@mui/material";
 import { useMutation, useQueryClient } from "react-query";
 import { useApp } from "../AppProvider";
+import { fetchWithAuth } from "../utils/api";
 
 const API = "http://localhost:8080";
 
-const followUser = async (userId) => {
-    const token = localStorage.getItem("token");
+const followUser = async (userId, token) => {
     const res = await fetch(`${API}/users/${userId}/follow`, {
         method: "POST",
         headers: {
@@ -16,8 +16,7 @@ const followUser = async (userId) => {
     return res.json();
 };
 
-const unfollowUser = async (userId) => {
-    const token = localStorage.getItem("token");
+const unfollowUser = async (userId, token) => {
     const res = await fetch(`${API}/users/${userId}/follow`, {
         method: "DELETE",
         headers: {
@@ -30,9 +29,10 @@ const unfollowUser = async (userId) => {
 
 export default function FollowButton({ userId, isFollowing }) {
     const queryClient = useQueryClient();
+    const { auth } = useApp();
 
     const { mutate: follow, isLoading: isFollowLoading } = useMutation(
-        followUser,
+        () => fetchWithAuth(`/users/${userId}/follow`, { method: "POST" }),
         {
             onSuccess: () => {
                 queryClient.invalidateQueries(["user", userId.toString()]);
@@ -41,7 +41,7 @@ export default function FollowButton({ userId, isFollowing }) {
     );
 
     const { mutate: unfollow, isLoading: isUnfollowLoading } = useMutation(
-        unfollowUser,
+        () => fetchWithAuth(`/users/${userId}/follow`, { method: "DELETE" }),
         {
             onSuccess: () => {
                 queryClient.invalidateQueries(["user", userId.toString()]);
@@ -53,17 +53,17 @@ export default function FollowButton({ userId, isFollowing }) {
 
     return (
         <Button
-            variant="contained"
-            onClick={() => {
-                if (isFollowing) {
-                    unfollow(userId);
-                } else {
-                    follow(userId);
-                }
-            }}
+            variant={isFollowing ? "outlined" : "contained"}
+            onClick={() => (isFollowing ? unfollow() : follow())}
             disabled={isLoading}
         >
-            {isLoading ? "Loading..." : (isFollowing ? "Following" : "Follow")}
+            {isLoading
+                ? isFollowing
+                    ? "Unfollowing..."
+                    : "Following..."
+                : isFollowing
+                ? "Unfollow"
+                : "Follow"}
         </Button>
     );
 }

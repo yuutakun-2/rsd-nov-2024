@@ -1,33 +1,24 @@
 import { Container, Box, Typography, CircularProgress, Divider } from "@mui/material";
 import { useParams } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "react-query";
+import { fetchWithAuth } from "../utils/api";
 
 import Item from "../components/Item";
 import Comment from "../components/Comment";
 import CommentForm from "../components/CommentForm";
+
 import { useApp } from "../AppProvider";
 
 const API = "http://localhost:8080";
 
 const fetchPost = async (id) => {
-    const res = await fetch(`${API}/posts/${id}`);
-    if (!res.ok) throw new Error("Failed to fetch post");
-    return res.json();
+    return fetchWithAuth(`/posts/${id}`);
 };
 
 const deleteComment = async (commentId) => {
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(`${API}/comments/${commentId}`, {
-        method: 'DELETE',
-        headers: {
-            Authorization: `Bearer ${token}`,
-        }
+    return fetchWithAuth(`/comments/${commentId}`, {
+        method: 'DELETE'
     });
-
-    if (!res.ok) throw new Error("Failed to delete comment");
-    
-    return res.json();
 };
 
 export default function Post() {

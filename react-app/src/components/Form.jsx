@@ -10,21 +10,16 @@ import {
 } from "@mui/icons-material";
 
 import { useMutation, useQueryClient } from "react-query";
+import { fetchWithAuth } from "../utils/api";
 
 async function postPost(content) {
-    const api = "http://localhost:8080/posts";
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(api, {
+    return fetchWithAuth("/posts", {
         method: 'POST',
-        body: JSON.stringify({ content }),
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
         },
+        body: JSON.stringify({ content }),
     });
-
-    return res.json();
 }
 
 export default function Form() {

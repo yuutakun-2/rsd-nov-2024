@@ -1,25 +1,23 @@
 import { Box, Typography, CircularProgress } from "@mui/material";
 import { useQuery } from "react-query";
+import { useApp } from "../AppProvider";
 import Item from "./Item";
+import { fetchWithAuth } from "../utils/api";
 
 const API = "http://localhost:8080";
 
-const fetchPosts = async (type = "latest") => {
-    const endpoint = type === "following" ? "/posts/following" : "/posts";
-    const token = localStorage.getItem("token");
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    
-    const res = await fetch(`${API}${endpoint}`, { headers });
-    if (!res.ok) throw new Error("Failed to fetch posts");
-    return res.json();
-};
+export default function Posts({ type = "all" }) {
+    const { auth } = useApp();
 
-export default function Posts({ type = "latest" }) {
-    const { data: posts, error, isLoading } = useQuery(
+    const {
+        data: posts = [],
+        isLoading,
+        error,
+    } = useQuery(
         ["posts", type],
-        () => fetchPosts(type),
+        () => fetchWithAuth(`/posts${type === "following" ? "/following" : ""}`),
         {
-            enabled: type !== "following" || !!localStorage.getItem("token")
+            enabled: type !== "following" || !!auth,
         }
     );
 

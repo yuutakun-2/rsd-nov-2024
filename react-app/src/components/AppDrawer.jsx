@@ -24,7 +24,7 @@ import { useNavigate } from "react-router";
 import { green } from "@mui/material/colors";
 
 export default function AppDrawer() {
-	const { showDrawer, setShowDrawer, auth, setAuth } = useApp();
+	const { showDrawer, setShowDrawer, auth, logout } = useApp();
 	const navigate = useNavigate();
 
 	const toggleDrawer = newOpen => () => {
@@ -98,8 +98,8 @@ export default function AppDrawer() {
 					<ListItem disablePadding>
 						<ListItemButton
 							onClick={() => {
-								setAuth(false);
-								localStorage.removeItem("token");
+								logout();
+								navigate("/login");
 							}}>
 							<ListItemIcon>
 								<LogoutIcon />

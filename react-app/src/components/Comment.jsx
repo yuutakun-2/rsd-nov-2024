@@ -11,8 +11,6 @@ import { useApp } from "../AppProvider";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import { blue } from "@mui/material/colors";
 
-const API = "http://localhost:8080";
-
 export default function Comment({ comment, remove }) {
 	const { auth } = useApp();
 

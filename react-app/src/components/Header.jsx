@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import { useApp } from "../AppProvider";
+import { fetchWithAuth } from "../utils/api";
 
 import {
     AppBar,
@@ -23,17 +24,6 @@ import {
 
 const API = "http://localhost:8080";
 
-async function fetchNotifications() {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`${API}/notifications`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    if (!res.ok) throw new Error("Failed to fetch notifications");
-    return res.json();
-}
-
 export default function Header() {
     const { 
         auth, 
@@ -42,34 +32,21 @@ export default function Header() {
         mode, 
         setMode, 
         setShowDrawer,
-        notifications: realtimeNotifications 
     } = useApp();
+
     const { pathname } = useLocation();
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
 
-    // Fetch notifications and calculate unread count
-    const { data: fetchedNotifications = [] } = useQuery(
+    const { data: notifications = [] } = useQuery(
         "notifications",
-        fetchNotifications,
+        () => fetchWithAuth("/notifications"),
         {
-            enabled: !!auth, // Only fetch if user is authenticated
-            refetchInterval: 30000, // Refetch every 30 seconds
+            enabled: !!auth,
+            staleTime: 1000 * 60, // 1 minute
         }
     );
 
-    // Combine fetched and realtime notifications, removing duplicates
-    const allNotifications = [...realtimeNotifications, ...fetchedNotifications]
-        .reduce((unique, notification) => {
-            const exists = unique.find(n => n.id === notification.id);
-            if (!exists) {
-                unique.push(notification);
-            }
-            return unique;
-        }, [])
-        .sort((a, b) => new Date(b.created) - new Date(a.created));
-
-    const unreadCount = allNotifications.filter((n) => !n.read).length;
+    const unreadCount = notifications.filter((n) => !n.read).length;
 
     return (
         <AppBar position="static">

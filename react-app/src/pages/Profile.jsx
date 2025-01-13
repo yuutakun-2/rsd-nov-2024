@@ -14,17 +14,14 @@ import Item from "../components/Item";
 import FollowButton from "../components/FollowButton";
 import UserListDialog from "../components/UserListDialog";
 import { useApp } from "../AppProvider";
+import { fetchWithAuth } from "../utils/api";
 
 const API = "http://localhost:8080";
 
-const fetchUser = async (id, token) => {
-	const res = await fetch(`${API}/users/${id}`, {
-        headers: {
-            Authorization: token ? `Bearer ${token}` : '',
-        },
-    });
-	if (!res.ok) throw new Error("Failed to fetch user");
-	return res.json();
+const fetchUser = async (id) => {
+    const res = await fetchWithAuth(`${API}/users/${id}`);
+    if (!res.ok) throw new Error("Failed to fetch user");
+    return res.json();
 };
 
 export default function Profile() {
@@ -32,13 +29,13 @@ export default function Profile() {
 	const { auth } = useApp();
     const [dialogType, setDialogType] = useState(null);
 
-	const {
-		data: user,
-		isLoading,
-		error,
-	} = useQuery(
+    const {
+        data: user,
+        isLoading,
+        error,
+    } = useQuery(
         ["user", id], 
-        () => fetchUser(id, auth?.token),
+        () => fetchWithAuth(`/users/${id}`),
         {
             enabled: !!id,
         }

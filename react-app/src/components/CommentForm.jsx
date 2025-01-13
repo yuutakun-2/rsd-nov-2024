@@ -1,38 +1,38 @@
-import { Box, TextField, Button } from "@mui/material";
 import { useState } from "react";
+import { Box, TextField, Button } from "@mui/material";
 import { useMutation, useQueryClient } from "react-query";
+import { useApp } from "../AppProvider";
+import { fetchWithAuth } from "../utils/api";
 
 const API = "http://localhost:8080";
 
-const createComment = async ({ postId, content }) => {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`${API}/posts/${postId}/comments`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content }),
-    });
-    if (!res.ok) throw new Error("Failed to create comment");
-    return res.json();
-};
-
 export default function CommentForm({ postId }) {
-    const [content, setContent] = useState("");
+    const [comment, setComment] = useState("");
     const queryClient = useQueryClient();
+    const { auth } = useApp();
 
-    const { mutate: comment, isLoading } = useMutation(createComment, {
-        onSuccess: () => {
-            queryClient.invalidateQueries(["post", postId]);
-            setContent("");
+    const mutation = useMutation(
+        async () => {
+            return fetchWithAuth(`/posts/${postId}/comments`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ content: comment }),
+            });
         },
-    });
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries(["post", postId.toString()]);
+                setComment("");
+            },
+        }
+    );
 
     const handleSubmit = e => {
         e.preventDefault();
-        if (!content.trim()) return;
-        comment({ postId, content });
+        if (!comment.trim()) return;
+        mutation.mutate();
     };
 
     return (
@@ -45,18 +45,18 @@ export default function CommentForm({ postId }) {
                 fullWidth
                 size="small"
                 placeholder="Write a comment..."
-                value={content}
-                onChange={e => setContent(e.target.value)}
-                disabled={isLoading}
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+                disabled={mutation.isLoading}
             />
             <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
                 <Button
                     type="submit"
                     variant="contained"
                     size="small"
-                    disabled={!content.trim() || isLoading}
+                    disabled={!comment.trim() || mutation.isLoading}
                 >
-                    {isLoading ? "Commenting..." : "Comment"}
+                    {mutation.isLoading ? "Commenting..." : "Comment"}
                 </Button>
             </Box>
         </Box>

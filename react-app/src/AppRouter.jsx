@@ -11,24 +11,46 @@ import Search from "./pages/Search";
 import NotificationsPage from "./pages/NotificationsPage";
 
 export default function AppRouter() {
-    return <BrowserRouter>
-        <Routes>
-            <Route path="/" element={<App />}>
-                <Route index element={<Home />} />
-                <Route path="/posts/:id" element={<Post />} />
-                <Route path="/users/:id" element={<Profile />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route
-                    path="/notifications"
-                    element={
-                        <PrivateRoute>
-                            <NotificationsPage />
-                        </PrivateRoute>
-                    }
-                />
-            </Route>
-        </Routes>
-    </BrowserRouter>
+	return (
+		<BrowserRouter>
+			<Routes>
+				<Route
+					path="/"
+					element={<App />}>
+					<Route
+						index
+						element={<Home />}
+					/>
+					<Route
+						path="/posts/:id"
+						element={<Post />}
+					/>
+					<Route
+						path="/users/:id"
+						element={<Profile />}
+					/>
+					<Route
+						path="/search"
+						element={<Search />}
+					/>
+					<Route
+						path="/login"
+						element={<Login />}
+					/>
+					<Route
+						path="/register"
+						element={<Register />}
+					/>
+					<Route
+						path="/notifications"
+						element={
+							<PrivateRoute>
+								<NotificationsPage />
+							</PrivateRoute>
+						}
+					/>
+				</Route>
+			</Routes>
+		</BrowserRouter>
+	);
 }
