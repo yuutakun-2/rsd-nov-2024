@@ -228,6 +228,6 @@ const styles = StyleSheet.create({
 	},
 	separator: {
 		height: StyleSheet.hairlineWidth,
-		marginLeft: 63, // 15 (padding) + 36 (icon size) + 12 (margin)
+		marginLeft: 63,
 	},
 });

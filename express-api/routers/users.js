@@ -184,7 +184,7 @@ router.get("/users/:id", optionalAuth, async (req, res) => {
     }
 });
 
-router.get("/search", async (req, res) => {
+router.get("/search", optionalAuth, async (req, res) => {
     const { q } = req.query;
     if (!q) {
         return res.status(400).json({ error: "Search query is required" });
@@ -204,18 +204,24 @@ router.get("/search", async (req, res) => {
                         followers: true,
                         follows: true
                     }
-                }
+                },
+                followers: req.user ? {
+                    where: {
+                        followerId: req.user.id
+                    }
+                } : false
             },
             take: 10
         });
 
         // Remove sensitive data and add counts
         const sanitizedUsers = users.map(user => {
-            const { password, _count, ...rest } = user;
+            const { password, _count, followers, ...rest } = user;
             return {
                 ...rest,
                 followersCount: _count.followers,
-                followingCount: _count.follows
+                followingCount: _count.follows,
+                isFollowing: req.user ? followers?.length > 0 : false
             };
         });
 

@@ -6,15 +6,20 @@ import Text from "../../components/Text";
 import { useAuth } from "../../context/auth";
 import UserList, { User } from "../../components/UserList";
 
-const searchUsers = async (query: string, token: string): Promise<User[]> => {
+const searchUsers = async (query: string, token?: string): Promise<User[]> => {
     if (!query.trim()) return [];
+
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+    };
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
 
     const response = await fetch(
         `http://localhost:8080/search?q=${encodeURIComponent(query)}`,
         {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+            headers,
         }
     );
 
@@ -32,9 +37,9 @@ export default function Search() {
 
     const { data: users, isLoading } = useQuery(
         ["users", searchQuery],
-        () => (token ? searchUsers(searchQuery, token) : Promise.resolve([])),
+        () => searchUsers(searchQuery, token || undefined),
         {
-            enabled: !!token && searchQuery.length > 0,
+            enabled: searchQuery.length > 0,
             staleTime: 0,
         }
     );

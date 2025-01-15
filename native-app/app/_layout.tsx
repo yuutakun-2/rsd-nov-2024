@@ -54,7 +54,7 @@ function RootLayoutNav() {
 				}}
 			/>
 			<Stack.Screen
-				name="add"
+				name="new"
 				options={{
 					presentation: "modal",
 					title: "New Post",

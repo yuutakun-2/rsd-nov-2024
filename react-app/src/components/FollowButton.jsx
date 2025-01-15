@@ -1,4 +1,4 @@
-import { Button } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import { useMutation, useQueryClient } from "react-query";
 import { useApp } from "../AppProvider";
 import { fetchWithAuth } from "../utils/api";
@@ -36,6 +36,7 @@ export default function FollowButton({ userId, isFollowing }) {
         {
             onSuccess: () => {
                 queryClient.invalidateQueries(["user", userId.toString()]);
+                queryClient.invalidateQueries(["search"]);
             },
         }
     );
@@ -45,25 +46,33 @@ export default function FollowButton({ userId, isFollowing }) {
         {
             onSuccess: () => {
                 queryClient.invalidateQueries(["user", userId.toString()]);
+                queryClient.invalidateQueries(["search"]);
             },
         }
     );
 
-    const isLoading = isFollowLoading || isUnfollowLoading;
-
     return (
         <Button
             variant={isFollowing ? "outlined" : "contained"}
-            onClick={() => (isFollowing ? unfollow() : follow())}
-            disabled={isLoading}
+            onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (isFollowing) {
+                    unfollow();
+                } else {
+                    follow();
+                }
+            }}
+            disabled={isFollowLoading || isUnfollowLoading}
+            size="small"
         >
-            {isLoading
-                ? isFollowing
-                    ? "Unfollowing..."
-                    : "Following..."
-                : isFollowing
-                ? "Unfollow"
-                : "Follow"}
+            {isFollowLoading || isUnfollowLoading ? (
+                <CircularProgress size={20} />
+            ) : isFollowing ? (
+                "Following"
+            ) : (
+                "Follow"
+            )}
         </Button>
     );
 }

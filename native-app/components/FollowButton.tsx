@@ -41,6 +41,7 @@ export default function FollowButton({ userId, isFollowing }: FollowButtonProps)
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['user', userId.toString()]);
+        queryClient.invalidateQueries(['users']); // Invalidate search results
       },
     }
   );
@@ -50,6 +51,7 @@ export default function FollowButton({ userId, isFollowing }: FollowButtonProps)
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['user', userId.toString()]);
+        queryClient.invalidateQueries(['users']); // Invalidate search results
       },
     }
   );

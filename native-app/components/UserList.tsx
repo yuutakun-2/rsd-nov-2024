@@ -3,6 +3,8 @@ import { useTheme } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
 import { router } from "expo-router";
 import Text from "./Text";
+import FollowButton from "./FollowButton";
+import { useAuth } from "../context/auth";
 
 export interface User {
     id: number;
@@ -11,6 +13,7 @@ export interface User {
     bio: string | null;
     followersCount?: number;
     followingCount?: number;
+    isFollowing?: boolean;
 }
 
 interface UserListProps {
@@ -19,6 +22,7 @@ interface UserListProps {
 
 export default function UserList({ users }: UserListProps) {
     const { colors } = useTheme();
+    const { token } = useAuth();
 
     return (
         <FlatList
@@ -52,7 +56,7 @@ export default function UserList({ users }: UserListProps) {
                                 <Text
                                     style={[
                                         styles.bio,
-                                        { color: colors.text + "99" },
+                                        { color: colors.text + "B3" },
                                     ]}>
                                     {user.bio}
                                 </Text>
@@ -80,6 +84,11 @@ export default function UserList({ users }: UserListProps) {
                                 </View>
                             )}
                         </View>
+                        {token && (
+                            <View style={styles.followButtonContainer}>
+                                <FollowButton userId={user.id} isFollowing={user.isFollowing || false} />
+                            </View>
+                        )}
                     </View>
                 </Pressable>
             )}
@@ -102,6 +111,7 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         backgroundColor: "transparent",
         alignItems: "center",
+        position: 'relative',
     },
     avatar: {
         width: 32,
@@ -142,5 +152,10 @@ const styles = StyleSheet.create({
     separator: {
         height: StyleSheet.hairlineWidth,
         marginLeft: 15,
+    },
+    followButtonContainer: {
+        position: 'absolute',
+        right: 0,
+        top: 12,
     },
 });
