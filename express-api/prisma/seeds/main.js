@@ -19,6 +19,7 @@ async function main() {
       },
     });
   }
+  console.log("User seeding completed...");
 
   console.log("Post seeding started...");
   for (i = 0; i < 5; i++) {
@@ -34,6 +35,7 @@ async function main() {
       },
     });
   }
+  console.log("Post seeding completed...");
 
   console.log("Comment seeding started...");
   // Add 2-4 comments for each post
@@ -50,6 +52,38 @@ async function main() {
       });
     }
   }
+  console.log("Comment seeding completed...");
+
+  console.log("Like seeding started...");
+  // Add 2-4 likes for each post
+  for (const post of posts) {
+    const numLikes = faker.number.int({ min: 2, max: 4 });
+    for (let i = 0; i < numLikes; i++) {
+      await prisma.like.create({
+        data: {
+          userId: faker.number.int({ min: 1, max: 5 }),
+          postId: post.id,
+        },
+      });
+    }
+  }
+  console.log("Like seeding completed...");
+
+  console.log("Following seeding started...");
+  // Add 1-3 followers for each user
+  const users = await prisma.user.findMany();
+  for (const user of users) {
+    const numFollowers = faker.number.int({ min: 1, max: 3 });
+    for (let i = 0; i < numFollowers; i++) {
+      await prisma.follow.create({
+        data: {
+          followerId: faker.number.int({ min: 1, max: 5 }),
+          followingId: user.id,
+        },
+      });
+    }
+  }
+  console.log("Following seeding completed...");
 }
 
 main()

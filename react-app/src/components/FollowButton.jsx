@@ -47,15 +47,9 @@ export default function FollowButton({ user }) {
 
   const handleClick = () => {
     if (isFollowed) {
-      console.log(isFollowed);
       unfollow.mutate(user.id);
-      console.log("User id:", user.id);
-      console.log(auth.id);
     } else if (!isFollowed) {
-      console.log(isFollowed);
       follow.mutate(user.id);
-      console.log("User id:", user.id);
-      console.log(auth.id);
     }
   };
 

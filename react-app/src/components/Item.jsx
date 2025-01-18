@@ -60,6 +60,7 @@ export default function Item({ post, remove }) {
   const like = useMutation(likePost, {
     onSuccess: () => {
       queryClient.invalidateQueries("posts");
+      queryClient.invalidateQueries(["post", post.id]);
       queryClient.invalidateQueries("user");
     },
   });
@@ -67,6 +68,7 @@ export default function Item({ post, remove }) {
   const unlike = useMutation(unlikePost, {
     onSuccess: () => {
       queryClient.invalidateQueries("posts");
+      queryClient.invalidateQueries(["post", post.id]);
       queryClient.invalidateQueries("user");
     },
   });

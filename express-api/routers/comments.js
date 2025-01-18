@@ -5,6 +5,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const { auth, isOwner } = require("../middlewares/auth");
+const { addNoti } = require("./noti.js");
 
 router.post("/posts/:id/comments", auth, async (req, res) => {
   const postId = req.params.id;
@@ -22,6 +23,14 @@ router.post("/posts/:id/comments", auth, async (req, res) => {
         user: true,
       },
     });
+
+    await addNoti({
+      type: "comment",
+      content: "replied to your post",
+      postId,
+      userId,
+    });
+    console.log("Add noti successfully");
 
     res.json(comment);
   } catch (err) {

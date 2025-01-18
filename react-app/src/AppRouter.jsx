@@ -5,6 +5,7 @@ import Register from "./components/Register";
 import Home from "./components/Home";
 import Post from "../pages/Post";
 import Profile from "./pages/Profile";
+import Notis from "./components/Notis";
 
 export default function AppRouter() {
   return (
@@ -16,6 +17,7 @@ export default function AppRouter() {
           <Route path="/register" element={<Register />} />
           <Route path="/posts/:id" element={<Post />} />
           <Route path="/users/:id" element={<Profile />} />
+          <Route path="/notis" element={<Notis />} />
         </Route>
       </Routes>
     </BrowserRouter>
