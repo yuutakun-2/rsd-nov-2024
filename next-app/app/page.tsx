@@ -1,4 +1,4 @@
-import Link from "next/link";
+import MovieList from "@/components/movie-list";
 
 type MovieType = {
 	id: string;
@@ -20,33 +20,29 @@ async function fetchPopular(): Promise<MovieType[]> {
     return data.results;
 }
 
+async function fetchTrending(): Promise<MovieType[]> {
+	const token = process.env.TMDB_TOKEN;
+	const res = await fetch("https://api.themoviedb.org/3/trending/movie/day", {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	});
+
+	const data = await res.json();
+	return data.results;
+}
+
 export default async function Home() {
     const popular = await fetchPopular();
-    const img_path = "http://image.tmdb.org/t/p/w185";
+    const trending = await fetchTrending();
 
 	return (
 		<div>
 			<h2 className="pb-2 mb-4 border-b font-bold text-lg">Popular</h2>
-            <div className="flex gap-2 flex-wrap">
-                {popular.map(movie => {
-                    return (
-						<div
-                            key={movie.id}
-							id={movie.id}
-							className="w-[185px] flex flex-col mb-4 items-center">
-							<Link href={`/detail/${movie.id}`}>
-								<img
-                                    className="transition-all hover:scale-105"
-									src={img_path + movie.poster_path}
-									alt={movie.title}
-								/>
-							</Link>
-							<b className="d-block text-center">{movie.title}</b>
-							<small>{movie.release_date.split("-")[0]}</small>
-						</div>
-					);
-                })}
-            </div>
+			<MovieList movies={popular} />
+
+			<h2 className="pb-2 mt-4 border-b font-bold text-lg">Trending</h2>
+			<MovieList movies={trending} />
 		</div>
 	);
 }
