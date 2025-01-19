@@ -113,12 +113,16 @@ router.post("/posts/:id/like", auth, async (req, res) => {
       },
     });
 
-    // await addNoti({
-    //   type: "like",
-    //   content: "likes your post",
-    //   postId: Number(id),
-    //   actorId: Number(user.id),
-    // });
+    if (post.user.id !== user.id) {
+      await prisma.notification.create({
+        data: {
+          type: "like",
+          postId: Number(id),
+          userId: post.user.id,
+          actorId: user.id,
+        },
+      });
+    }
 
     res.json(post);
   } catch (err) {
@@ -161,12 +165,11 @@ router.get("/notis", auth, async (req, res) => {
   const user = res.locals.user;
   const notis = await prisma.notification.findMany({
     where: {
-      post: {
-        userId: Number(user.id),
-      },
+      userId: Number(user.id),
     },
     include: {
       user: true,
+      actor: true,
     },
     orderBy: { id: "desc" },
     take: 20,
@@ -206,30 +209,5 @@ router.put("/notis/read/:id", auth, async (req, res) => {
 
   res.json(noti);
 });
-
-async function addNoti({ type, content, postId, actorId }) {
-  const userId = res.locals.user.id;
-  const post = await prisma.post.findUnique({
-    where: {
-      id: Number(postId),
-    },
-  });
-
-  if (post.userId == userId) return false;
-
-  try {
-    return await prisma.notification.create({
-      data: {
-        type,
-        content,
-        postId: Number(postId),
-        userId: Number(userId),
-        actorId,
-      },
-    });
-  } catch (err) {
-    console.log(err);
-  }
-}
 
 module.exports = { postsRouter: router };

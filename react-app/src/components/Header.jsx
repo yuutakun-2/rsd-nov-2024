@@ -44,7 +44,6 @@ export default function Header() {
     if (!auth) return 0;
     if (isLoading || isError) return 0;
 
-    console.log(`data: ${data}`);
     return data.filter((noti) => !noti.read).length;
   }
 

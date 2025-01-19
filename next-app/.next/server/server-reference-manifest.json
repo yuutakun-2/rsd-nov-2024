@@ -1,0 +1,37 @@
+{
+  "node": {
+    "408a8f0aec7b854b74747c069760ad8170af9108d7": {
+      "workers": {
+        "app/_not-found/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Fyuuta%2FDesktop%2Frsd-nov-2024%2Fnext-app%2Fapp%2Flayout.tsx%22%2C%5B%5B%22408a8f0aec7b854b74747c069760ad8170af9108d7%22%2C%22%24%24RSC_SERVER_ACTION_0%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Fyuuta%2FDesktop%2Frsd-nov-2024%2Fnext-app%2Fapp%2Flayout.tsx%22%2C%5B%5B%22408a8f0aec7b854b74747c069760ad8170af9108d7%22%2C%22%24%24RSC_SERVER_ACTION_0%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/detail/[id]/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Fyuuta%2FDesktop%2Frsd-nov-2024%2Fnext-app%2Fapp%2Flayout.tsx%22%2C%5B%5B%22408a8f0aec7b854b74747c069760ad8170af9108d7%22%2C%22%24%24RSC_SERVER_ACTION_0%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/genres/[name]/[id]/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Fyuuta%2FDesktop%2Frsd-nov-2024%2Fnext-app%2Fapp%2Flayout.tsx%22%2C%5B%5B%22408a8f0aec7b854b74747c069760ad8170af9108d7%22%2C%22%24%24RSC_SERVER_ACTION_0%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        },
+        "app/search/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Fyuuta%2FDesktop%2Frsd-nov-2024%2Fnext-app%2Fapp%2Flayout.tsx%22%2C%5B%5B%22408a8f0aec7b854b74747c069760ad8170af9108d7%22%2C%22%24%24RSC_SERVER_ACTION_0%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/_not-found/page": "rsc",
+        "app/page": "rsc",
+        "app/detail/[id]/page": "rsc",
+        "app/genres/[name]/[id]/page": "rsc",
+        "app/search/page": "rsc"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "okB3/8AA2u5lZvQNKh6dfhzr2pRh+RAp/fmlvPOYlyQ="
+}

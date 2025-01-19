@@ -4,19 +4,18 @@ const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-const { auth, isOwner } = require("../middlewares/auth");
-const { addNoti } = require("./noti.js");
+const { auth } = require("../middlewares/auth");
 
 router.post("/posts/:id/comments", auth, async (req, res) => {
   const postId = req.params.id;
   const { content } = req.body;
-  const userId = Number(res.locals.user.id);
+  const user = res.locals.user;
 
   try {
     const comment = await prisma.comment.create({
       data: {
         postId: parseInt(postId),
-        userId,
+        userId: Number(user.id),
         content,
       },
       include: {
@@ -24,13 +23,22 @@ router.post("/posts/:id/comments", auth, async (req, res) => {
       },
     });
 
-    await addNoti({
-      type: "comment",
-      content: "replied to your post",
-      postId,
-      userId,
+    const post = await prisma.post.findUnique({
+      where: {
+        id: Number(postId),
+      },
     });
-    console.log("Add noti successfully");
+
+    if (post.userId !== user.id) {
+      const noti = await prisma.notification.create({
+        data: {
+          type: "comment",
+          postId: Number(postId),
+          userId: Number(post.userId),
+          actorId: user.id,
+        },
+      });
+    }
 
     res.json(comment);
   } catch (err) {

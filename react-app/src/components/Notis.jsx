@@ -113,16 +113,11 @@ export default function Notis() {
                   opacity: 1,
                 }}
               >
-                {noti.type == "comment" ? (
-                  <CommentIcon color="success" />
-                ) : (
-                  <FavoriteIcon color="error" />
-                )}
                 <Box sx={{ ml: 3 }}>
                   <Avatar />
                   <Box sx={{ mt: 1 }}>
                     <Typography component="span" sx={{ mr: 1 }}>
-                      <b>{noti.user.name}</b>
+                      <b>{noti.actor.name}</b>
                     </Typography>
                     <Typography
                       component="span"
