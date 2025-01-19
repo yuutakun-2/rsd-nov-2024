@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type MovieType = {
 	id: string;
 	title: string;
@@ -8,11 +10,11 @@ type MovieType = {
 };
 
 type CastType = {
-    id: string;
-    name: string;
-    character: string;
-    profile_path: string;
-}
+	id: string;
+	name: string;
+	character: string;
+	profile_path: string;
+};
 
 async function fetchMovie(id: string): Promise<MovieType> {
 	const res = await fetch(`https://api.themoviedb.org/3/movie/${id}`, {
@@ -46,10 +48,10 @@ export default async function Detail({
 }) {
 	const { id } = await params;
 	const movie = await fetchMovie(id);
-    const casts = await fetchCasts(id);
+	const casts = await fetchCasts(id);
 
 	const cover = "http://image.tmdb.org/t/p/w1280";
-    const profile = "http://image.tmdb.org/t/p/w185";
+	const profile = "http://image.tmdb.org/t/p/w185";
 
 	return (
 		<div>
@@ -68,13 +70,23 @@ export default async function Detail({
 			<div className="flex flex-wrap gap-2">
 				{casts.map(cast => {
 					return (
-						<div key={cast.id} className="w-[128px] text-center">
-							<img
-								src={profile + cast.profile_path}
-								alt={cast.name}
-							/>
-                            <b>{cast.name}</b>
-                            <div className="text-gray-600 text-sm">{cast.character}</div>
+						<div
+							key={cast.id}
+							className="w-[128px] text-center">
+							{cast.profile_path ? (
+								<img
+									src={profile + cast.profile_path}
+									alt={cast.name}
+								/>
+							) : (
+								<div className="w-[128px] h-[192px] bg-gray-300"></div>
+							)}
+							<b>
+								<Link href={`/person/${cast.id}`}>{cast.name}</Link>
+							</b>
+							<div className="text-gray-600 text-sm">
+								{cast.character}
+							</div>
 						</div>
 					);
 				})}
