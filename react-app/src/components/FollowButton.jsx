@@ -31,6 +31,10 @@ export default function FollowButton({ user }) {
   const { auth } = useApp();
   const isFollowed = user.followers?.some((f) => f.followerId === auth?.id);
 
+  if (auth?.id === user.id) {
+    return;
+  }
+
   const follow = useMutation(followUser, {
     onSuccess: () => {
       // queryClient.invalidateQueries(["user", user.id]);

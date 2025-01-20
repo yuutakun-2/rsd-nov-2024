@@ -35,7 +35,7 @@ router.get("/posts", async (req, res) => {
 
 router.get("/posts/:id", async (req, res) => {
   const { id } = req.params; // {id} is to accept other parameters from the user's input
-  const post = await prisma.post.findFirst({
+  const post = await prisma.post.findUnique({
     where: {
       id: Number(id),
     },

@@ -16,7 +16,7 @@ const prisma = new PrismaClient();
 router.post("/users", async (req, res) => {
   const { name, username, email, password } = req.body;
   if (!name || !username || !email || !password) {
-    return res.status(400).json({ msg: "Required fields cannot be empty." });
+    return res.status(400).json({ msg: "All fields are required." });
   }
 
   try {
@@ -28,7 +28,7 @@ router.post("/users", async (req, res) => {
         password: await bcrypt.hash(password, 10),
       },
     });
-    res.status(201).json(user);
+    res.status(201).json({ message: "User created successfully." }, user);
   } catch {
     res.status(401).json({ msg: "Invalid user response." });
   }
@@ -83,7 +83,7 @@ router.get("/users/:id", async (req, res) => {
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
-    return res.status(400).json({ msg: "Required fields cannot be empty." });
+    return res.status(400).json({ msg: "Username and password required." });
   }
   try {
     const user = await prisma.user.findUnique({
@@ -92,11 +92,11 @@ router.post("/login", async (req, res) => {
       },
     });
     if (!user) {
-      return res.status(404).json({ msg: "Invalid user." });
+      return res.status(401).json({ msg: "Invalid username and password." });
     }
 
     if (await bcrypt.compare(password, user.password)) {
-      const token = jwt.sign(user, process.env.JWT_SECRET);
+      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "7d" });
       res.json({ token, user });
     }
   } catch {
@@ -109,7 +109,7 @@ router.post("/users/:id/follow", auth, async (req, res) => {
   const authUser = res.locals.user.id;
 
   if (Number(id) === Number(authUser))
-    return res.status(400).json({ msg: "Cannot follow yourself." });
+    return res.status(400).json({ msg: "You cannot follow yourself." });
 
   try {
     const follow = await prisma.follow.create({
@@ -133,7 +133,7 @@ router.delete("/users/:id/unfollow", auth, async (req, res) => {
   const authUser = res.locals.user.id;
 
   if (Number(id) === Number(authUser))
-    return res.status(400).json({ msg: "Cannot unfollow yourself." });
+    return res.status(400).json({ msg: "You cannot unfollow yourself." });
 
   try {
     const unfollow = await prisma.follow.deleteMany({
@@ -154,6 +154,9 @@ router.get("/verify", auth, async (req, res) => {
       id: res.locals.user.id,
     },
   });
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
   res.json(user);
 });
 
