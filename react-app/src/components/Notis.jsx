@@ -8,14 +8,28 @@ import {
   CardActionArea,
 } from "@mui/material";
 
-import {
-  Comment as CommentIcon,
-  Favorite as FavoriteIcon,
-} from "@mui/icons-material";
+import { differenceInHours } from "date-fns";
 
 import { useNavigate } from "react-router";
 import { format } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "react-query";
+
+import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
+import CommentIcon from "@mui/icons-material/Comment";
+import { styled } from "@mui/material/styles";
+
+const IconOverlay = styled(Box)(({ theme }) => ({
+  position: "absolute",
+  bottom: -4,
+  right: -4,
+  backgroundColor: theme.palette.mode === "light" ? "#fff" : "#000",
+  borderRadius: "50%",
+  padding: 4,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxShadow: theme.shadows[2],
+}));
 
 async function fetchNotis() {
   const token = localStorage.getItem("token");
@@ -40,9 +54,9 @@ async function putAllNotisRead() {
   return res.json();
 }
 
-async function putNotiRead() {
+async function putNotiRead(notiId) {
   const token = localStorage.getItem("token");
-  const res = await fetch(`${import.meta.env.VITE_API}/notis/read/${id}`, {
+  const res = await fetch(`${import.meta.env.VITE_API}/notis/read/${notiId}`, {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -59,14 +73,28 @@ export default function Notis() {
   const { isLoading, isError, error, data } = useQuery("notis", fetchNotis);
 
   const readAllNotis = useMutation(putAllNotisRead, {
-    onMutate: async () => {
-      await queryClient.cancelQueries("notis");
-      await queryClient.setQueryData("notis", (old) => {
-        return old.map((noti) => {
-          noti.read = true;
-          return noti;
-        });
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries("notis");
+    },
+  });
+
+  // Why does this not work?
+  // const readAllNotis = useMutation(putAllNotisRead, {
+  //   onMutate: () => {
+  //     queryClient.cancelQueries("notis");
+  //     queryClient.setQueryData("notis", (old) => {
+  //       return old.map((noti) => {
+  //         noti.read = true;
+  //         return noti;
+  //       });
+  //     });
+  //     queryClient.invalidateQueries(["notis", auth], fetchNotis);
+  //   },
+  // });
+
+  const readNoti = useMutation(putNotiRead, {
+    onSuccess: (notiId) => {
+      queryClient.invalidateQueries("notis");
     },
   });
 
@@ -85,7 +113,9 @@ export default function Notis() {
   return (
     <Box>
       <Box sx={{ display: "flex", mb: 2 }}>
-        <Box sx={{ flex: 1 }}></Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4">Notifications</Typography>
+        </Box>
         <Button
           size="small"
           variant="outlined"
@@ -100,10 +130,11 @@ export default function Notis() {
 
       {data.map((noti) => {
         return (
-          <Card sx={{ mb: 2, opacity: noti.read ? 0.3 : 1 }} key={noti.id}>
+          <Card sx={{ mb: 2, opacity: noti?.read ? 0.3 : 1 }} key={noti.id}>
             <CardActionArea
               onClick={() => {
-                readNoti.mutate(noti.id);
+                !noti.read && readNoti.mutate(noti.id);
+                console.log("onClick action done.");
                 navigate(`/posts/${noti.postId}`);
               }}
             >
@@ -113,11 +144,28 @@ export default function Notis() {
                   opacity: 1,
                 }}
               >
-                <Box sx={{ ml: 3 }}>
-                  <Avatar />
+                <Box sx={{ display: "flex", ml: 3, gap: 2 }}>
+                  <Box sx={{ position: "relative" }}>
+                    <Avatar />
+                    <IconOverlay>
+                      {noti.type === "like" ? (
+                        <ThumbUpAltIcon
+                          sx={{ fontSize: 16, color: "primary.main" }}
+                        />
+                      ) : (
+                        <CommentIcon
+                          sx={{ fontSize: 16, color: "primary.main" }}
+                        />
+                      )}
+                    </IconOverlay>
+                  </Box>
                   <Box sx={{ mt: 1 }}>
                     <Typography component="span" sx={{ mr: 1 }}>
-                      <b>{noti.actor.name}</b>
+                      {noti.actor.name}{" "}
+                      {noti.type === "like"
+                        ? `${noti.type}d`
+                        : `${noti.type}ed`}{" "}
+                      on your post.
                     </Typography>
                     <Typography
                       component="span"
@@ -129,7 +177,12 @@ export default function Notis() {
                       {noti.content}
                     </Typography>
                     <Typography component="span" color="primary">
-                      <small>{format(noti.created, "MMM dd, yyyy")}</small>
+                      <small>
+                        {differenceInHours(new Date(), new Date(noti.created)) <
+                        24
+                          ? format(new Date(noti.created), "h:mm a")
+                          : format(new Date(noti.created), "MMM d")}
+                      </small>
                     </Typography>
                   </Box>
                 </Box>

@@ -36,6 +36,7 @@ router.post("/posts/:id/comments", auth, async (req, res) => {
           postId: Number(postId),
           userId: Number(post.userId),
           actorId: user.id,
+          read: false,
         },
       });
     }

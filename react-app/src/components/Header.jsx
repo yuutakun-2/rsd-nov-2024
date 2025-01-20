@@ -95,7 +95,11 @@ export default function Header() {
 
           {auth && (
             <IconButton color="inherit" onClick={() => navigate("/notis")}>
-              <Badge color="error" badgeContent={notiCount()}>
+              <Badge
+                color="error"
+                badgeContent={notiCount()}
+                invisible={notiCount() === 0}
+              >
                 <NotificationsIcon />
               </Badge>
             </IconButton>

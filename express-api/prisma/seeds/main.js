@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 const bcrypt = require("bcrypt");
 async function main() {
   console.log("User seeding started...");
-  for (i = 0; i < 5; i++) {
+  for (i = 0; i < 10; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const password = await bcrypt.hash("password", 10);
@@ -22,7 +22,7 @@ async function main() {
   console.log("User seeding completed...");
 
   console.log("Post seeding started...");
-  for (i = 0; i < 5; i++) {
+  for (i = 0; i < 10; i++) {
     const title = faker.lorem.word();
     const content = faker.lorem.paragraph();
     const userId = faker.number.int({ min: 1, max: 5 });
@@ -46,7 +46,7 @@ async function main() {
       await prisma.comment.create({
         data: {
           content: faker.lorem.sentence(),
-          userId: faker.number.int({ min: 1, max: 5 }),
+          userId: faker.number.int({ min: 1, max: 10 }),
           postId: post.id,
         },
       });
@@ -61,7 +61,7 @@ async function main() {
     for (let i = 0; i < numLikes; i++) {
       await prisma.like.create({
         data: {
-          userId: faker.number.int({ min: 1, max: 5 }),
+          userId: faker.number.int({ min: 1, max: 10 }),
           postId: post.id,
         },
       });
@@ -70,17 +70,29 @@ async function main() {
   console.log("Like seeding completed...");
 
   console.log("Following seeding started...");
-  // Add 1-3 followers for each user
   const users = await prisma.user.findMany();
   for (const user of users) {
     const numFollowers = faker.number.int({ min: 1, max: 3 });
-    for (let i = 0; i < numFollowers; i++) {
-      await prisma.follow.create({
-        data: {
-          followerId: faker.number.int({ min: 1, max: 5 }),
-          followingId: user.id,
-        },
-      });
+    const possibleFollowers = users.filter((u) => u.id !== user.id); // Exclude self
+
+    // Get random followers from filtered list
+    const followers = faker.helpers.arrayElements(
+      possibleFollowers,
+      numFollowers
+    );
+
+    for (const follower of followers) {
+      try {
+        await prisma.follow.create({
+          data: {
+            followerId: follower.id,
+            followingId: user.id,
+          },
+        });
+      } catch (error) {
+        // Skip if relation already exists
+        continue;
+      }
     }
   }
   console.log("Following seeding completed...");
