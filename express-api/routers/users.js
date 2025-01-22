@@ -148,6 +148,28 @@ router.delete("/users/:id/unfollow", auth, async (req, res) => {
   }
 });
 
+router.get("/search", async (req, res) => {
+  const { q } = req.query; // q refers to /search?q=
+
+  if (!q) {
+    return res.status(400).json({ error: "Search query is required" });
+  }
+
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [{ name: { contains: q } }, { username: { contains: q } }],
+      },
+      take: 10,
+    });
+
+    res.json(users);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get("/verify", auth, async (req, res) => {
   const user = await prisma.user.findUnique({
     where: {
