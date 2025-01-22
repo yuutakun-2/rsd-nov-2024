@@ -63,30 +63,14 @@ export default function Header() {
           <Typography>App</Typography>
         </Box>
 
-        <Box
-          sx={{
-            display: "flex",
-            gap: 1,
-            alignItems: "center",
-            border: 1,
-            px: 6,
-            my: 2,
-            borderRadius: 8,
-            cursor: "pointer",
-            "&:hover": {
-              opacity: 0.5,
-            },
-          }}
-        >
-          <IconButton color="inherit" sx={{ opacity: 0.5 }}>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <IconButton
+            color="inherit"
+            sx={{ opacity: 0.5 }}
+            onClick={() => navigate("/search")}
+          >
             <SearchIcon />
           </IconButton>
-          <Typography sx={{ px: 1, opacity: 0.5 }}>
-            Search for blogs or users
-          </Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 1 }}>
           {auth && (
             <IconButton color="inherit" onClick={() => setShowForm(!showForm)}>
               <AddIcon />
