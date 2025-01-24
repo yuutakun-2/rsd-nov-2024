@@ -28,9 +28,10 @@ router.post("/users", async (req, res) => {
         password: await bcrypt.hash(password, 10),
       },
     });
-    res.status(201).json({ message: "User created successfully." }, user);
-  } catch {
-    res.status(401).json({ msg: "Invalid user response." });
+    // res.status(201).json({ message: "User created successfully." }, user);
+    res.status(201).json({ message: "User created successfully." });
+  } catch (err) {
+    res.status(401).json(err.message);
   }
 });
 

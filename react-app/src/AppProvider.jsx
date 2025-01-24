@@ -6,6 +6,8 @@ import { QueryClientProvider, QueryClient } from "react-query";
 
 import AppRouter from "./AppRouter";
 
+import AppSocket from "./AppSocket";
+
 const AppContext = createContext();
 const queryClient = new QueryClient();
 
@@ -62,6 +64,7 @@ export default function AppProvider() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider theme={theme}>
           <AppRouter />
+          <AppSocket />
           <CssBaseline />
         </ThemeProvider>
       </QueryClientProvider>
