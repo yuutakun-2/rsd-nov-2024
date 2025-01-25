@@ -23,6 +23,7 @@ export default function AppSocket() {
   useEffect(() => {
     console.log("WS: new message received.");
     if (lastJsonMessage && lastJsonMessage.event) {
+      console.log(lastJsonMessage.event);
       queryClient.invalidateQueries(lastJsonMessage.event);
     }
   }, [lastJsonMessage]);

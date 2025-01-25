@@ -6,6 +6,8 @@ const prisma = new PrismaClient();
 
 const { auth } = require("../middlewares/auth");
 
+const { clients } = require("./ws");
+
 router.post("/posts/:id/comments", auth, async (req, res) => {
   const postId = req.params.id;
   const { content } = req.body;
@@ -27,6 +29,16 @@ router.post("/posts/:id/comments", auth, async (req, res) => {
       where: {
         id: Number(postId),
       },
+      include: {
+        user: true,
+      },
+    });
+
+    clients.map((client) => {
+      if (client.userId == post.user.id) {
+        client.ws.send(JSON.stringify({ event: "notis" }));
+        console.log(`WS: event sent to ${client.userId}: comment`);
+      }
     });
 
     if (post.userId !== user.id) {
