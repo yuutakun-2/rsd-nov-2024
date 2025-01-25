@@ -1,33 +1,35 @@
-import { useSelector, useDispatch } from "react-redux"
-import { add, del, toggle } from "./todoSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { deleteTodos, postTodos, toggleTodos } from "./todoSlice";
 
 import { useRef } from "react";
 
 export default function App() {
-    const todo = useSelector(state => state.todo.tasks.filter(item => !item.done));
-    const done = useSelector(state =>
+	const todo = useSelector(state =>
+		state.todo.tasks.filter(item => !item.done)
+	);
+	const done = useSelector(state =>
 		state.todo.tasks.filter(item => item.done)
 	);
 
-    const dispatch = useDispatch();
+	const dispatch = useDispatch();
 
-    const nameRef = useRef();
-    
-    return (
+	const titleRef = useRef();
+
+	return (
 		<div>
 			<h1>Todo</h1>
 			<form
 				onSubmit={e => {
 					e.preventDefault();
-					const name = nameRef.current.value;
-					if (!name) return false;
+					const title = titleRef.current.value;
+					if (!title) return false;
 
-					dispatch(add(name));
+					dispatch(postTodos(title));
 					e.currentTarget.reset();
 				}}>
 				<input
 					type="text"
-					ref={nameRef}
+					ref={titleRef}
 				/>
 				<button type="submit">Add</button>
 			</form>
@@ -35,15 +37,18 @@ export default function App() {
 				{todo.map(item => {
 					return (
 						<li key={item.id}>
-                            <button onClick={() => {
-                                dispatch( toggle(item.id) );
-                            }}>Check</button>
+							<button
+								onClick={() => {
+									dispatch(toggleTodos(item.id));
+								}}>
+								Check
+							</button>
 
-							{item.name}
+							{item.title}
 
 							<button
 								onClick={() => {
-									dispatch(del(item.id));
+									dispatch(deleteTodos(item.id));
 								}}>
 								Delete
 							</button>
@@ -59,16 +64,16 @@ export default function App() {
 						<li key={item.id}>
 							<button
 								onClick={() => {
-									dispatch(toggle(item.id));
+									dispatch(toggleTodos(item.id));
 								}}>
 								Undo
 							</button>
 
-							{item.name}
+							{item.title}
 
 							<button
 								onClick={() => {
-									dispatch(del(item.id));
+									dispatch(deleteTodos(item.id));
 								}}>
 								Delete
 							</button>
