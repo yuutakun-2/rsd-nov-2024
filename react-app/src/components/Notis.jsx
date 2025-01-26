@@ -135,7 +135,11 @@ export default function Notis() {
               onClick={() => {
                 !noti.read && readNoti.mutate(noti.id);
                 console.log("onClick action done.");
-                navigate(`/posts/${noti.postId}`);
+                {
+                  noti.type === "follow"
+                    ? navigate(`/users/${noti.actorId}`)
+                    : navigate(`/posts/${noti.postId}`);
+                }
               }}
             >
               <CardContent
@@ -162,10 +166,10 @@ export default function Notis() {
                   <Box sx={{ mt: 1 }}>
                     <Typography component="span" sx={{ mr: 1 }}>
                       {noti.actor.name}{" "}
-                      {noti.type === "like"
-                        ? `${noti.type}d`
-                        : `${noti.type}ed`}{" "}
-                      on your post.
+                      {noti.type === "like" && `${noti.type}d your post.`}
+                      {noti.type === "comment" &&
+                        `${noti.type}ed on your post.`}
+                      {noti.type === "follow" && `${noti.type}ed you.`}
                     </Typography>
                     <Typography
                       component="span"

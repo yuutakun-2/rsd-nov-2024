@@ -210,9 +210,9 @@ router.put("/notis/read/:id", auth, async (req, res) => {
   const noti = await prisma.notification.update({
     where: {
       id: Number(id),
-      post: {
-        userId: Number(user.id),
-      },
+      // post: {
+      //   userId: Number(user.id),
+      // }, this was unnecessary, and also giving errors when updating noti related to user follows
     },
     data: { read: true },
   });

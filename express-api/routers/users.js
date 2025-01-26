@@ -13,6 +13,8 @@ const { auth } = require("../middlewares/auth");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const { clients } = require("./ws");
+
 router.post("/users", async (req, res) => {
   const { name, username, email, password } = req.body;
   if (!name || !username || !email || !password) {
@@ -123,6 +125,28 @@ router.post("/users/:id/follow", auth, async (req, res) => {
         follower: true,
       },
     });
+
+    // WS to send noti
+    clients.map((client) => {
+      if (client.userId == follow.followingId) {
+        console.log(
+          "client.userId == follow.followingId at users.js client map"
+        );
+        client.ws.send(JSON.stringify({ event: "notis" }));
+        console.log(`WS: event sent to ${client.userId}: follow`);
+      }
+    });
+
+    // Noti create
+    const noti = await prisma.notification.create({
+      data: {
+        type: "follow",
+        userId: Number(id),
+        actorId: Number(authUser),
+        read: false,
+      },
+    });
+
     res.status(201).json(follow);
   } catch (err) {
     return res.json(err.message);
